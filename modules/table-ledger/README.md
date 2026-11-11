@@ -29,6 +29,7 @@ Limits:
 - Plot-die talents (Opportunist, Sure Outcome) and reactions to other characters (Reactive Strike) are not covered.
 
 The world setting **Offer ability triggers** turns the feature off.
+
 ## Install
 
 Manifest URL: `https://raw.githubusercontent.com/sazap10/cosmere-foundry-modules/main/modules/table-ledger/module.json`
