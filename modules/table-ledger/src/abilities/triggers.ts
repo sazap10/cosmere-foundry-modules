@@ -110,6 +110,7 @@ export interface Matches {
 /**
  * Optional rules become offers; mandatory ones are riders. A rule that depends
  * on the outcome waits for it: computed from the card, or `answer` from the user.
+ * Rules sharing an id (one talent with two triggers) offer at most once per use.
  */
 export function matchTriggers(use: UseDescription, rules: TriggerRule[], answer?: Outcome): Matches {
   const result: Matches = { offers: [], riders: [], askOutcome: false };
@@ -119,6 +120,7 @@ export function matchTriggers(use: UseDescription, rules: TriggerRule[], answer?
       result.riders.push(rule);
       continue;
     }
+    if (result.offers.some((offer) => offer.rule.id === rule.id)) continue;
     let outcome: Outcome | null = null;
     if (dependsOnOutcome(rule)) {
       outcome = answer ?? computeOutcome(use, rule);
