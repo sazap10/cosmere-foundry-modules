@@ -9,6 +9,7 @@ import { pickTarget } from "../../abilities/target-picker";
 import { registerHealPrompt, requestHealing } from "../../abilities/heal-prompt";
 import { ALLY_ACTION_IDS, healRequestFor, type HealTarget, type HealerActor } from "./healing";
 import { registerCosmereTriggers } from "./triggers";
+import { onRenderItemSheet } from "./trigger-sheet";
 
 const SYSTEM_ID = "cosmere-rpg";
 const GUARDS_SETTING = "abilityGuards";
@@ -320,6 +321,7 @@ export const cosmereAbilities: AbilityAdapter = {
     Hooks.on(`${SYSTEM_ID}.chatMessageInteract`, onChatMessageInteract);
     Hooks.on("renderChatMessageHTML", onRenderChatMessage);
     Hooks.on("renderApplicationV2", onRenderSheet);
+    Hooks.on("renderApplicationV2", onRenderItemSheet);
   },
 
   ready() {

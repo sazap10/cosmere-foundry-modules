@@ -27,6 +27,51 @@
         "Name": "Offer ability triggers",
         "Hint": "After a character uses an action, offer the talents that trigger on it (Combat Coordination, Combat Training, Binding Strike and others) and apply mandatory ones such as Swift Healer."
       }
+    },
+    "Editor": {
+      "Title": "Ability trigger",
+      "Hint": "Offer this item when its owner uses a matching action. A trigger set here replaces the built-in one for this item.",
+      "BuiltIn": "Built in:",
+      "Invalid": "This trigger isn't saved: {reason}.",
+      "Trigger": "Triggers on",
+      "ActionId": "Action id",
+      "FollowUp": "Item to use",
+      "Amount": "Focus spent",
+      "Optional": "Offer it (otherwise apply it without asking)",
+      "Note": "Note shown with the offer",
+      "Clear": "Remove trigger",
+      "Kind": {
+        "weapon-attack": "A weapon attack or Strike",
+        "melee-weapon-attack": "A melee weapon attack",
+        "attack": "Any attack",
+        "action": "One named action",
+        "heal-other": "A heal given to another character"
+      },
+      "OutcomeLabel": "When the attack",
+      "Outcome": {
+        "any": "Any result",
+        "hit": "Hits",
+        "miss": "Misses"
+      },
+      "EffectLabel": "Offers",
+      "Effect": {
+        "follow-up": "Use another item",
+        "graze": "Graze the missed target",
+        "focus-spend": "Spend focus",
+        "replacement-heal": "Replace a heal",
+        "heal-bonus": "Add Medicine ranks to a heal"
+      },
+      "CostLabel": "Cost",
+      "Cost": {
+        "normal": "Normal cost",
+        "waived": "No focus cost",
+        "waived-on-miss": "No focus cost on a miss"
+      },
+      "LimitLabel": "Limit",
+      "Limit": {
+        "none": "No limit",
+        "round": "Once per round"
+      }
     }
   }
 }
