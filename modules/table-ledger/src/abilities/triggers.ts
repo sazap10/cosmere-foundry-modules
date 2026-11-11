@@ -75,7 +75,8 @@ export function computeOutcome(use: UseDescription, rule: TriggerRule): Outcome 
   return defs.some((def) => use.d20! >= def[defence]) ? "hit" : "miss";
 }
 
-function matchesKind(use: UseDescription, rule: TriggerRule): boolean {
+/** The use is the kind of action this rule triggers on. */
+export function matchesKind(use: UseDescription, rule: TriggerRule): boolean {
   switch (rule.trigger.kind) {
     case "weapon-attack":
       return use.weapon;
@@ -219,4 +220,70 @@ export function limitSpent(rule: TriggerRule, record: { combatId: string; round:
 export function offerExpired(posted: { combatId: string; round: number } | null, combat: CombatPoint | null): boolean {
   if (!posted) return false;
   return !combat || combat.id !== posted.combatId || combat.round !== posted.round;
+}
+
+/** What a trigger card stores in its message flag: everything needed to re-derive its offers. */
+export interface TriggerCardState {
+  sourceMessageId: string;
+  actorUuid: string;
+  actorName: string;
+  use: UseDescription;
+  rules: TriggerRule[];
+  /** Rule id → display name of the item the rule uses. */
+  labels: Record<string, string>;
+  /** Rule id → uuid of the item that carries the rule (where its once-per-round use is recorded). */
+  sources: Record<string, string>;
+  /** Rule ids whose follow-up item isn't on the actor. */
+  missing: string[];
+  /** The user's Hit or Miss answer, when the outcome couldn't be computed. */
+  answer?: Outcome;
+  /** Rule ids already used from this card. */
+  taken: string[];
+  /** Combat and round the card was posted in; null outside combat. */
+  posted: { combatId: string; round: number } | null;
+}
+
+export type OfferStatus = "open" | "taken" | "unavailable" | "expired" | "spent";
+
+export interface OfferView {
+  rule: TriggerRule;
+  cost: "normal" | "waived";
+  status: OfferStatus;
+}
+
+export interface CardView {
+  askOutcome: boolean;
+  offers: OfferView[];
+}
+
+/**
+ * The card as it should read now. An offer is open only while it hasn't been
+ * taken, its follow-up exists, the card hasn't lapsed with its round, and a
+ * once-per-round limit hasn't been spent (`record` is the talent's last use).
+ */
+export function describeCard(
+  state: TriggerCardState,
+  combat: CombatPoint | null,
+  record: (ruleId: string) => { combatId: string; round: number } | null,
+): CardView {
+  const matches = matchTriggers(state.use, state.rules, state.answer);
+  const expired = offerExpired(state.posted, combat);
+  const offers = matches.offers.map<OfferView>(({ rule, cost }) => {
+    let status: OfferStatus = "open";
+    if (state.taken.includes(rule.id)) status = "taken";
+    else if (state.missing.includes(rule.id)) status = "unavailable";
+    else if (expired) status = "expired";
+    else if (limitSpent(rule, record(rule.id), combat)) status = "spent";
+    return { rule, cost, status };
+  });
+  return { askOutcome: matches.askOutcome, offers };
+}
+
+const DEFENCE_WORDS: Record<string, Defence> = { physical: "phy", cognitive: "cog", spiritual: "spi" };
+
+/** The one defence a description names ("against the target's Spiritual defense"), or undefined when none or several. */
+export function defenceFromText(text: string): Defence | undefined {
+  const found = new Set<Defence>();
+  for (const match of text.matchAll(/\b(physical|cognitive|spiritual)\s+defen[cs]es?\b/gi)) found.add(DEFENCE_WORDS[match[1].toLowerCase()]);
+  return found.size === 1 ? [...found][0] : undefined;
 }

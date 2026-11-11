@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   computeOutcome,
+  defenceFromText,
+  describeCard,
   limitSpent,
   matchTriggers,
   offerExpired,
   parseTag,
   rulesFor,
+  type TriggerCardState,
   type TriggerRule,
   type UseDescription,
 } from "../../src/abilities/triggers";
@@ -243,5 +246,67 @@ describe("offerExpired", () => {
   it("never expires a card posted outside combat", () => {
     expect(offerExpired(null, { id: "C", round: 9 })).toBe(false);
     expect(offerExpired(null, null)).toBe(false);
+  });
+});
+
+describe("describeCard", () => {
+  const state = (over: Partial<TriggerCardState> = {}): TriggerCardState => ({
+    sourceMessageId: "m",
+    actorUuid: "Actor.me",
+    actorName: "Me",
+    use: use({ d20: 5 }),
+    rules: [rule({ id: "graze", outcome: "miss", effect: "graze", followUp: undefined, limit: "round" })],
+    labels: {},
+    sources: {},
+    missing: [],
+    taken: [],
+    posted: { combatId: "C", round: 3 },
+    ...over,
+  });
+  const none = () => null;
+  const combat = { id: "C", round: 3 };
+
+  it("is open while nothing has used, lapsed or spent it", () => {
+    expect(describeCard(state(), combat, none).offers.map((o) => o.status)).toEqual(["open"]);
+  });
+
+  it("marks an offer taken once used", () => {
+    expect(describeCard(state({ taken: ["graze"] }), combat, none).offers[0].status).toBe("taken");
+  });
+
+  it("lapses with the round", () => {
+    expect(describeCard(state(), { id: "C", round: 4 }, none).offers[0].status).toBe("expired");
+  });
+
+  it("is spent when a sibling card already used the once-per-round rule this round (AE8)", () => {
+    const record = () => ({ combatId: "C", round: 3 });
+    expect(describeCard(state(), combat, record).offers[0].status).toBe("spent");
+  });
+
+  it("is unavailable when the follow-up isn't on the character", () => {
+    expect(describeCard(state({ missing: ["graze"] }), combat, none).offers[0].status).toBe("unavailable");
+  });
+
+  it("reports that the outcome is still needed instead of offering a hit-dependent rule", () => {
+    const view = describeCard(state({ use: use({ targets: [] }) }), combat, none);
+    expect(view).toMatchObject({ askOutcome: true, offers: [] });
+    expect(describeCard(state({ use: use({ targets: [] }), answer: "miss" }), combat, none).offers).toHaveLength(1);
+  });
+
+  it("never lapses or spends a card posted and used outside combat", () => {
+    const view = describeCard(state({ posted: null }), null, () => ({ combatId: "C", round: 3 }));
+    expect(view.offers[0].status).toBe("open");
+  });
+});
+
+describe("defenceFromText", () => {
+  it("returns the one defence the text names", () => {
+    expect(defenceFromText("Make a test against the target's Spiritual defense.")).toBe("spi");
+    expect(defenceFromText("Roll against their Cognitive defence")).toBe("cog");
+  });
+
+  it("returns nothing when no defence or several are named", () => {
+    expect(defenceFromText("Gain a focus.")).toBeUndefined();
+    expect(defenceFromText("Against the Physical defense or the Cognitive defense of a target.")).toBeUndefined();
   });
 });

@@ -1,0 +1,32 @@
+{
+  "Triggers": {
+    "Heading": "{actor}: abilities you can use now",
+    "PopupTitle": "Abilities you can use",
+    "AskOutcome": "Did your attack hit? Some abilities depend on it.",
+    "Hit": "Hit",
+    "Miss": "Miss",
+    "Use": "Use",
+    "Skip": "Skip",
+    "Later": "Decide later",
+    "CardHint": "Anything you skip stays on the chat card until the round ends.",
+    "Summary": {
+      "followUp": "Use {name}",
+      "followUpFree": "Use {name} with no focus cost",
+      "graze": "Graze the missed target, no focus cost",
+      "focusSpend": "Spend {amount} focus",
+      "replacementHeal": "Roll the replacement heal"
+    },
+    "Status": {
+      "taken": "Used",
+      "unavailable": "Not on this character",
+      "expired": "Expired with the round",
+      "spent": "Already used this round"
+    },
+    "Settings": {
+      "Enabled": {
+        "Name": "Offer ability triggers",
+        "Hint": "After a character uses an action, offer the talents that trigger on it (Combat Coordination, Combat Training, Binding Strike and others) and apply mandatory ones such as Swift Healer."
+      }
+    }
+  }
+}
