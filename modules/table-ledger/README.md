@@ -14,7 +14,21 @@ System support goes through adapters (`src/adapters/`):
 | Target-rolled heals (Field Medicine, Progression's Regrowth) | ✔ | needs an adapter |
 | Ability audit + chat hints (includes items whose charges no action spends, with a one-click fix) | ✔ | needs an adapter |
 | Charges/uses/ammo shown on actor-sheet item rows | ✔ | needs an adapter |
+| Optional ability triggers (popup + chat card after an action; once-per-round limits) | ✔ | needs an adapter |
 
+## Ability triggers (Cosmere RPG)
+
+After a character uses an action, the module offers the talents that trigger on it. A popup opens for the user who used the action, and a chat card with the same buttons stays in the log until the combat round ends (outside combat it never expires). Taking an offer uses the follow-up with its cost rule: Combat Coordination's Decisive Command costs no focus after a missed Strike, Binding Strike leaves the cost to the system's consume dialog, and Shadowing spends its 3 focus. Combat Training's graze is applied through the GM, who rolls the weapon's graze dice and grazes each card once. A once-per-round talent is offered again only after the next combat round starts.
+
+Built-in rules cover Combat Coordination, Practical Demonstration, Combat Training, Binding Strike, Swift Healer, Swift Regeneration and Shadowing. Other talents, homebrew included, get a trigger from the **Ability trigger** section on the item's Details tab; a trigger set there replaces the item's built-in one. Anyone who can edit an item can edit its trigger.
+
+Limits:
+
+- Swift Healer's extra health is added to heals rolled by the module's heal prompt (Field Medicine, Regrowth). Heals applied with the system's own Apply buttons get no bonus, because the system doesn't say who healed.
+- Only once per round is tracked. Once per scene or day, and uses made by hand, are not.
+- Plot-die talents (Opportunist, Sure Outcome) and reactions to other characters (Reactive Strike) are not covered.
+
+The world setting **Offer ability triggers** turns the feature off.
 ## Install
 
 Manifest URL: `https://raw.githubusercontent.com/sazap10/cosmere-foundry-modules/main/modules/table-ledger/module.json`
