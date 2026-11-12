@@ -1,0 +1,17 @@
+/* Table Ledger — feature styles are appended per section below. */
+:root {
+  --tl-accent: #4aa3c7;
+  --tl-success: #3f9d5a;
+  --tl-failure: #b5463a;
+}
+
+/*
+ * Module windows: v13's .window-content is a flex column with overflow hidden,
+ * so each part root must be allowed to shrink and scroll itself. Apps declare
+ * `scrollable: [""]` on their parts so re-renders keep the scroll position.
+ */
+:is([id^="tl-"], [id^="table-ledger-"]).application > .window-content > [data-application-part] {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}

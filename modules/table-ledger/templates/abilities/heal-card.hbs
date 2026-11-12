@@ -1,0 +1,9 @@
+<div class="tl-abilities-heal">
+  <h3><i class="fa-solid fa-heart-pulse"></i> {{heading}}</h3>
+  {{#if note}}<p class="tl-abilities-heal-note">{{note}}</p>{{/if}}
+  {{#if result}}<p class="tl-abilities-heal-result">{{result}}</p>{{/if}}
+  {{#unless done}}
+  <button type="button" data-action="tl-heal-roll"><i class="fa-solid fa-dice"></i> {{rollLabel}}</button>
+  {{#if repeatable}}<p class="hint">{{localize "TABLE_LEDGER.Abilities.Heal.RepeatHint"}}</p>{{/if}}
+  {{/unless}}
+</div>

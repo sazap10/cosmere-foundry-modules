@@ -1,0 +1,13 @@
+{
+  "name": "foundry-modules",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "modules/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm test --workspaces"
+  }
+}

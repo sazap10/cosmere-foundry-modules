@@ -1,0 +1,57 @@
+{{#*inline "tlStormFields"}}
+  <fieldset>
+    <legend>{{nextLabel}}</legend>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Clock.Edit.Date"}}</label>
+      <input type="text" name="{{key}}.next_date" value="{{storm.next_date}}" placeholder="{{placeholder}}">
+    </div>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Clock.Edit.InDays"}}</label>
+      <input type="number" name="{{key}}.next_in_days" value="{{storm.next_in_days}}" step="1">
+    </div>
+    <p class="hint">{{localize "TABLE_LEDGER.Clock.Edit.InDaysHint"}}</p>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Clock.Confidence"}}</label>
+      <input type="text" name="{{key}}.next_confidence" value="{{storm.next_confidence}}" placeholder="low">
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>{{lastLabel}}</legend>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Clock.Edit.Date"}}</label>
+      <input type="text" name="{{key}}.last_date" value="{{storm.last_date}}">
+    </div>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Clock.Edit.Intensity"}}</label>
+      <select name="{{key}}.last_intensity">{{selectOptions intensityChoices selected=storm.last_intensity}}</select>
+    </div>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Clock.Edit.Notes"}}</label>
+      <input type="text" name="{{key}}.last_notes" value="{{storm.last_notes}}">
+    </div>
+  </fieldset>
+{{/inline}}
+<div class="tl-clock-edit-body">
+  <fieldset>
+    <legend>{{localize "TABLE_LEDGER.Clock.Edit.Current"}}</legend>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Clock.Edit.Date"}}</label>
+      <input type="text" name="vorin_date" value="{{input.vorin_date}}" placeholder="1174.3.3.5" required>
+    </div>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Clock.Edit.TimeOfDay"}}</label>
+      <input type="text" name="time_of_day" value="{{input.time_of_day}}" placeholder="Afternoon">
+    </div>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Clock.Edit.Stormlight"}}</label>
+      <select name="stormlight">{{selectOptions stormlightChoices selected=input.stormlight}}</select>
+    </div>
+  </fieldset>
+  {{> tlStormFields key="highstorm" storm=input.highstorm placeholder="1174.4.1.2" intensityChoices=intensityChoices
+      nextLabel=(localize "TABLE_LEDGER.Clock.NextHighstorm") lastLabel=(localize "TABLE_LEDGER.Clock.LastHighstorm")}}
+  {{> tlStormFields key="everstorm" storm=input.everstorm placeholder="1174.3.5.3" intensityChoices=intensityChoices
+      nextLabel=(localize "TABLE_LEDGER.Clock.NextEverstorm") lastLabel=(localize "TABLE_LEDGER.Clock.LastEverstorm")}}
+  <footer class="form-footer">
+    <button type="submit"><i class="fa-solid fa-floppy-disk"></i> {{localize "TABLE_LEDGER.Clock.Edit.Save"}}</button>
+  </footer>
+</div>

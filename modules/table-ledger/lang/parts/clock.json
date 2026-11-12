@@ -1,0 +1,59 @@
+{
+  "Clock": {
+    "Title": "World Clock",
+    "Tool": "Toggle world clock",
+    "Empty": "No calendar yet.",
+    "NextHighstorm": "Next highstorm",
+    "LastHighstorm": "Last highstorm",
+    "Confidence": "Confidence",
+    "Relative": {
+      "Today": "today",
+      "Tomorrow": "tomorrow",
+      "InDays": "in {n} days",
+      "Overdue": "{n} days overdue",
+      "Unknown": "unknown"
+    },
+    "Stormlight": {
+      "Available": "Stormlight available",
+      "Unavailable": "No Stormlight"
+    },
+    "Intensity": {
+      "weak": "Weak",
+      "normal": "Normal",
+      "mighty": "Mighty",
+      "unknown": "Unknown intensity"
+    },
+    "Stale": {
+      "Label": "Stale",
+      "Tooltip": "Last updated {n} days ago"
+    },
+    "Settings": {
+      "StaleDays": {
+        "Name": "World clock: stale after (days)",
+        "Hint": "Show a 'stale' badge when the calendar hasn't been updated for this many real days. 0 turns it off."
+      },
+      "Widget": {
+        "Name": "Show world clock",
+        "Hint": "Show the floating world-clock widget on this client."
+      }
+    },
+    "Edit": {
+      "Title": "Edit World Clock",
+      "Button": "Edit",
+      "Current": "Current",
+      "Date": "Vorin date",
+      "TimeOfDay": "Time of day",
+      "Stormlight": "Stormlight",
+      "Unknown": "Unknown",
+      "InDays": "In days",
+      "InDaysHint": "Leave blank to compute from the two dates (YYYY.M.W.D).",
+      "Intensity": "Intensity",
+      "Notes": "Notes",
+      "Save": "Save",
+      "Saved": "World clock updated.",
+      "Invalid": "World clock not saved: {error}"
+    },
+    "NextEverstorm": "Next everstorm",
+    "LastEverstorm": "Last everstorm"
+  }
+}

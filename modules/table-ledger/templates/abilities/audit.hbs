@@ -1,0 +1,36 @@
+<section class="tl-abilities-audit-body">
+  <header class="tl-abilities-toolbar">
+    <p class="tl-abilities-summary">{{localize "TABLE_LEDGER.Abilities.Audit.Summary" scanned=scanned findings=findingCount}}</p>
+    <button type="button" data-action="rescan"><i class="fa-solid fa-rotate"></i> {{localize "TABLE_LEDGER.Abilities.Audit.Rescan"}}</button>
+    <button type="button" data-action="copyReport"><i class="fa-solid fa-copy"></i> {{localize "TABLE_LEDGER.Abilities.Audit.CopyReport"}}</button>
+  </header>
+  {{#if rows.length}}
+  <ol class="tl-abilities-list">
+    {{#each rows}}
+    <li class="tl-abilities-row" data-index="{{index}}">
+      <div class="tl-abilities-head">
+        <a class="tl-abilities-name" data-action="open" data-tooltip="{{localize "TABLE_LEDGER.Abilities.Audit.Open"}}">
+          <i class="fa-solid fa-up-right-from-square"></i> {{name}}
+        </a>
+        <span class="tl-abilities-location">{{location}}</span>
+        <span class="tl-abilities-data">{{activation}}{{#if damage}} · {{damage}}{{/if}}</span>
+      </div>
+      <ul class="tl-abilities-findings">
+        {{#each findings}}
+        <li class="tl-abilities-finding">
+          <p>{{text}}</p>
+          <div class="tl-abilities-fixes">
+            {{#each fixes}}
+            <button type="button" data-action="fix" data-fix="{{fix}}"><i class="fa-solid fa-wrench"></i> {{label}}</button>
+            {{/each}}
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+    </li>
+    {{/each}}
+  </ol>
+  {{else}}
+  <p class="tl-abilities-empty">{{localize "TABLE_LEDGER.Abilities.Audit.Empty"}}</p>
+  {{/if}}
+</section>

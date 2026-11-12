@@ -1,0 +1,21 @@
+{
+  "Recap": {
+    "Tool": "Post session recap",
+    "Card": {
+      "Heading": "Session {session} recap",
+      "Read": "Read the recap",
+      "Speaker": "Session Recap"
+    },
+    "Form": {
+      "Title": "Post Session Recap",
+      "Session": "Session",
+      "RecapTitle": "Title",
+      "Date": "Date",
+      "Body": "Recap",
+      "BodyHint": "HTML or plain text (blank lines start new paragraphs). Re-posting a session number updates its page.",
+      "Post": "Post recap",
+      "Posted": "Recap for session {session} posted.",
+      "Invalid": "Recap not posted: {error}"
+    }
+  }
+}

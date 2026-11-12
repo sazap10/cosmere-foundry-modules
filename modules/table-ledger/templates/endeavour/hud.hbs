@@ -1,0 +1,54 @@
+<section class="tl-endeavour-body">
+  {{#if hasEndeavour}}
+  <header class="tl-endeavour-header">
+    <h3 class="tl-endeavour-name">{{endeavour.name}}</h3>
+    <span class="tl-endeavour-meta">{{endeavour.typeLabel}} · {{localize "TABLE_LEDGER.Endeavour.Round" round=endeavour.round}}</span>
+    {{#unless endeavour.active}}<span class="tl-endeavour-status tl-endeavour-status-{{endeavour.status}}">{{endeavour.statusLabel}}</span>{{/unless}}
+  </header>
+
+  <div class="tl-endeavour-track">
+    <span class="tl-endeavour-track-label">{{localize "TABLE_LEDGER.Endeavour.Successes"}} {{endeavour.successes}}/{{endeavour.successesNeeded}}</span>
+    <span class="tl-endeavour-pips">{{#each endeavour.successPips}}<span class="tl-endeavour-pip tl-endeavour-pip-success{{#if filled}} filled{{/if}}"></span>{{/each}}</span>
+  </div>
+  <div class="tl-endeavour-track">
+    <span class="tl-endeavour-track-label">{{localize "TABLE_LEDGER.Endeavour.Failures"}} {{endeavour.failures}}/{{endeavour.failuresAllowed}}</span>
+    <span class="tl-endeavour-pips">{{#each endeavour.failurePips}}<span class="tl-endeavour-pip tl-endeavour-pip-failure{{#if filled}} filled{{/if}}"></span>{{/each}}</span>
+  </div>
+
+  {{#if endeavour.active}}
+  <ul class="tl-endeavour-party">
+    {{#each party}}
+    <li class="tl-endeavour-result-{{result}}"><span>{{name}}</span> <span class="tl-endeavour-chip">{{resultLabel}}</span></li>
+    {{/each}}
+  </ul>
+
+  {{#if declarations.length}}
+  <ul class="tl-endeavour-declarations">
+    {{#each declarations}}
+    <li><strong>{{actorName}}</strong>: {{skillLabel}}{{#if note}} — {{note}}{{/if}}</li>
+    {{/each}}
+  </ul>
+  {{/if}}
+
+  {{#if canDeclare}}
+  <div class="tl-endeavour-declare">
+    {{#if multipleActors}}
+    <select name="actorUuid">{{#each declareActors}}<option value="{{uuid}}">{{name}}</option>{{/each}}</select>
+    {{else}}
+    {{#each declareActors}}<input type="hidden" name="actorUuid" value="{{uuid}}">{{/each}}
+    {{/if}}
+    {{#if hasSkills}}
+    <select name="skill">{{#each skills}}<option value="{{key}}">{{label}}</option>{{/each}}</select>
+    {{else}}
+    <input type="text" name="skill" maxlength="60" placeholder="{{localize "TABLE_LEDGER.Endeavour.Skill"}}">
+    {{/if}}
+    <input type="text" name="note" maxlength="500" placeholder="{{localize "TABLE_LEDGER.Endeavour.DeclareNote"}}">
+    <button type="button" data-action="declare"><i class="fa-solid fa-hand"></i> {{localize "TABLE_LEDGER.Endeavour.Declare"}}</button>
+    {{#each myDeclarations}}<p class="hint">{{localize "TABLE_LEDGER.Endeavour.YouDeclared" actor=actorName skill=skillLabel}}</p>{{/each}}
+  </div>
+  {{/if}}
+  {{/if}}
+  {{else}}
+  <p class="hint">{{localize "TABLE_LEDGER.Endeavour.NoneActive"}}</p>
+  {{/if}}
+</section>

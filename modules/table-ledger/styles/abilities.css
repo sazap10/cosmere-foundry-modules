@@ -1,0 +1,100 @@
+/* Ability audit window and chat hints. */
+.tl-abilities-audit .tl-abilities-audit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.tl-abilities-audit .tl-abilities-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tl-abilities-audit .tl-abilities-toolbar button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.tl-abilities-audit .tl-abilities-summary {
+  flex: 1;
+  margin: 0;
+}
+
+.tl-abilities-audit .tl-abilities-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.tl-abilities-audit .tl-abilities-row {
+  border-left: 3px solid var(--tl-failure);
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tl-abilities-audit .tl-abilities-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.tl-abilities-audit .tl-abilities-name {
+  font-weight: bold;
+  color: var(--tl-accent);
+  cursor: pointer;
+}
+
+.tl-abilities-audit .tl-abilities-location,
+.tl-abilities-audit .tl-abilities-data {
+  opacity: 0.75;
+  font-size: var(--font-size-12, 0.75rem);
+}
+
+.tl-abilities-audit .tl-abilities-findings {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+}
+
+.tl-abilities-audit .tl-abilities-finding p {
+  margin: 0.25rem 0;
+}
+
+.tl-abilities-audit .tl-abilities-fixes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.tl-abilities-audit .tl-abilities-fixes button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.tl-abilities-audit .tl-abilities-empty {
+  color: var(--tl-success);
+}
+
+.tl-abilities-hint {
+  margin: 0.25rem 0 0;
+  font-style: italic;
+  border-top: 1px dashed var(--tl-accent);
+  padding-top: 0.25rem;
+}
+
+/* Target picker */
+.tl-abilities-picker { display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto; margin-bottom: 8px; }
+.tl-abilities-picker-row { display: flex; align-items: center; gap: 8px; padding: 2px 4px; border-radius: 4px; cursor: pointer; }
+.tl-abilities-picker-row:has(input:checked) { background: color-mix(in srgb, var(--tl-accent) 25%, transparent); }
+.tl-abilities-picker-row img { width: 32px; height: 32px; object-fit: cover; border: none; border-radius: 4px; }
+.tl-abilities-picker-note { opacity: 0.7; font-size: 0.9em; }
+
+/* Heal request card */
+.tl-abilities-heal h3 { margin: 0 0 4px; font-size: 1.05em; }
+.tl-abilities-heal-note { margin: 0 0 4px; font-size: 0.9em; opacity: 0.85; }
+.tl-abilities-heal-result { margin: 0 0 4px; color: var(--tl-success); font-weight: bold; }

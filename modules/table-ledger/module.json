@@ -1,0 +1,68 @@
+{
+  "id": "table-ledger",
+  "title": "Table Ledger",
+  "description": "GM and player table aids: endeavour tracker, goals board, world clock, session recaps, and ability usability checks. System adapters: Cosmere RPG (D&D 5e planned).",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13.351",
+    "maximum": "13"
+  },
+  "authors": [
+    {
+      "name": "sazap10",
+      "url": "https://github.com/sazap10"
+    }
+  ],
+  "url": "https://github.com/sazap10/foundry-modules/tree/main/modules/table-ledger",
+  "esmodules": [
+    "dist/table-ledger.js"
+  ],
+  "styles": [
+    "styles/table-ledger.css",
+    "styles/endeavour.css",
+    "styles/goals.css",
+    "styles/clock.css",
+    "styles/recap.css",
+    "styles/abilities.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "cosmere-rpg",
+        "type": "system",
+        "compatibility": {
+          "minimum": "3.1"
+        }
+      },
+      {
+        "id": "dnd5e",
+        "type": "system"
+      }
+    ]
+  },
+  "socket": true,
+  "manifest": "https://raw.githubusercontent.com/sazap10/foundry-modules/main/modules/table-ledger/module.json",
+  "download": "https://github.com/sazap10/foundry-modules/releases/download/table-ledger-v0.1.0/table-ledger.zip",
+  "flags": {
+    "hotReload": {
+      "extensions": [
+        "css",
+        "hbs",
+        "json"
+      ],
+      "paths": [
+        "styles",
+        "templates",
+        "lang"
+      ]
+    }
+  }
+}

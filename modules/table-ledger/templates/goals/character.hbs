@@ -1,0 +1,24 @@
+<section class="tl-goals-character">
+  <header class="tl-goals-character-header">
+    {{#if img}}<img class="tl-goals-portrait" src="{{img}}" alt="">{{/if}}
+    <button type="button" class="tl-goals-actor" data-action="openSheet" data-actor-uuid="{{actorUuid}}" data-tooltip="TABLE_LEDGER.Goals.OpenSheet">{{actorName}}</button>
+    <span class="tl-goals-count">{{completedCount}}/{{totalCount}}</span>
+  </header>
+  {{#unless @root.collapsed}}
+  {{#if purpose}}<p class="tl-goals-note"><strong>{{localize "TABLE_LEDGER.Goals.Purpose"}}:</strong> {{purpose}}</p>{{/if}}
+  {{#if obstacle}}<p class="tl-goals-note"><strong>{{localize "TABLE_LEDGER.Goals.Obstacle"}}:</strong> {{obstacle}}</p>{{/if}}
+  <ol class="tl-goals-goals">
+    {{#each goals}}
+    <li class="tl-goals-goal{{#if complete}} tl-goals-complete{{/if}}">
+      <span class="tl-goals-name"{{#if description}} title="{{description}}"{{/if}}>{{name}}</span>
+      <button type="button" class="tl-goals-pips" data-action="goalPip" data-item-uuid="{{itemUuid}}" data-level="{{level}}" data-max="{{max}}"
+              data-tooltip="TABLE_LEDGER.Goals.PipHint" aria-label="{{name}}: {{level}}/{{max}}">
+        {{#each pips}}<span class="tl-goals-pip{{#if filled}} tl-goals-pip-filled{{/if}}"></span>{{/each}}
+      </button>
+    </li>
+    {{else}}
+    <li class="tl-goals-empty">{{#if hiddenCount}}{{localize "TABLE_LEDGER.Goals.AllComplete"}}{{else}}{{localize "TABLE_LEDGER.Goals.NoGoals"}}{{/if}}</li>
+    {{/each}}
+  </ol>
+  {{/unless}}
+</section>

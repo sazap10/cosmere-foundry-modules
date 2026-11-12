@@ -1,0 +1,35 @@
+{
+  "Goals": {
+    "Purpose": "Purpose",
+    "Obstacle": "Obstacle",
+    "NoGoals": "No goals.",
+    "AllComplete": "All goals complete.",
+    "OpenSheet": "Open character sheet",
+    "PipHint": "Left-click: add progress. Right-click: remove progress. Keyboard: Enter adds, Shift+Enter removes.",
+    "Board": {
+      "Title": "Goals board",
+      "HideCompleted": "Hide completed goals",
+      "Empty": "No player characters."
+    },
+    "Widget": {
+      "Title": "My goals",
+      "Collapse": "Collapse",
+      "Expand": "Expand",
+      "Empty": "You don't own a character."
+    },
+    "Card": {
+      "Title": "Goal complete",
+      "Body": "{actor} completed the goal “{goal}”."
+    },
+    "Settings": {
+      "Widget": {
+        "Name": "Show my goals widget",
+        "Hint": "Show a small window with your character's goals when the world loads."
+      },
+      "AnnounceComplete": {
+        "Name": "Announce completed goals",
+        "Hint": "Post a chat card when a player character completes a goal."
+      }
+    }
+  }
+}

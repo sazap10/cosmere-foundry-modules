@@ -1,0 +1,97 @@
+{
+  "Endeavour": {
+    "Title": "Endeavour",
+    "PanelTitle": "Endeavour Tracker",
+    "ToggleHud": "Toggle Endeavour HUD",
+    "NoneActive": "No endeavour is running.",
+    "Round": "Round {round}",
+    "RoundShort": "Rd",
+    "Rounds": "{count} rounds",
+    "RoundsTitle": "Rounds so far",
+    "Successes": "Successes",
+    "Failures": "Failures",
+    "Skill": "Skill",
+    "Note": "Note",
+    "Character": "Character",
+    "ResultHeader": "Result",
+    "StartedWith": "Started with {successes} successes and {failures} failures.",
+    "DeclareNote": "What you try (optional)",
+    "Declare": "Declare",
+    "Declared": "Contribution declared. The GM decides the result.",
+    "YouDeclared": "{actor} declared {skill}.",
+    "DeclaredIntent": "Declared: {skill}",
+    "HideFromPlayers": "Hide from players",
+    "ShowToPlayers": "Show to players",
+    "NoCharacters": "No player-owned characters in this world.",
+    "Undo": "Undo this round's result",
+    "LogTitle": "Opportunity / Complication",
+    "NoCharacter": "No character",
+    "AddNote": "Log",
+    "NextRound": "Next round",
+    "Clear": "Close tracker",
+    "StartTitle": "Start an endeavour",
+    "Name": "Name",
+    "TypeLabel": "Type",
+    "DifficultyLabel": "Difficulty",
+    "DifficultyPreset": "{name} ({successes}/{failures})",
+    "CustomThresholds": "Custom successes / failures",
+    "CustomHint": "Used only when Difficulty is Custom, e.g. 9 / 4.",
+    "Starting": "Starting successes / failures",
+    "PlayerVisible": "Visible to players",
+    "Start": "Start",
+    "HistoryTitle": "Recent endeavours",
+    "Type": {
+      "discovery": "Discovery",
+      "exploration": "Exploration",
+      "mission": "Mission",
+      "pursuit": "Pursuit",
+      "custom": "Custom"
+    },
+    "Difficulty": {
+      "easy": "Easy",
+      "moderate": "Moderate",
+      "hard": "Hard",
+      "custom": "Custom"
+    },
+    "Status": {
+      "active": "In progress",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "abandoned": "Abandoned"
+    },
+    "Result": {
+      "success": "Success",
+      "failure": "Failure",
+      "none": "No roll",
+      "pending": "Waiting"
+    },
+    "Kind": {
+      "opportunity": "Opportunity",
+      "complication": "Complication"
+    },
+    "End": {
+      "succeeded": "End: success",
+      "failed": "End: failure",
+      "abandoned": "Abandon",
+      "ConfirmTitle": "End endeavour",
+      "Confirm": "End this endeavour as <strong>{outcome}</strong> and post the summary to chat?"
+    },
+    "Error": {
+      "invalidPayload": "That request was malformed.",
+      "invalidThresholds": "Successes and failures must be whole numbers from 1 to 50.",
+      "invalidInitial": "Starting values must be below the thresholds.",
+      "notActive": "No endeavour is in progress.",
+      "notActiveGM": "Only the active GM can change the endeavour. Ask them, or make this GM the active one.",
+      "alreadyContributed": "That character already contributed this round.",
+      "noContribution": "That character has no result this round.",
+      "emptyNote": "Write a note first.",
+      "notAllowed": "You can't declare for that character right now."
+    },
+    "Settings": {
+      "PlayerDeclare": {
+        "Name": "Players declare endeavour contributions",
+        "Hint": "Players can submit the skill they intend to use each round from the endeavour HUD. The GM still records the result."
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+// Cosmere RPG heals whose amount the *target* rolls, keyed by the action's
+// system id (cosmere-rpg 3.1.0 data, checked against the Stormlight Handbook
+// text on the items):
+// - Field Medicine (`field-medicine`): DC 15 Medicine test; the target recovers
+//   their recovery die + the healer's Medicine ranks on a success, the
+//   recovery die alone on a failure.
+// - Progression (`prg`), Character Regrowth: the target recovers 1d4 +
+//   Progression modifier at the start of each of their turns while infused
+//   (die grows with ranks), so the request can be rolled again each turn.
+import { localize } from "../../constants";
+import type { HealRequest } from "../../abilities/heal-prompt";
+import { fieldMedicineFormula, normaliseDie, parseDC, regrowthFormula, testSucceeded } from "../../abilities/healing";
+
+/** Ally-targeted actions without a heal formula; the picker still asks for a target. */
+export const ALLY_ACTION_IDS = ["field-medicine", "prg", "injury-regrowth"] as const;
+
+interface Skill {
+  rank?: number;
+  mod?: { value?: number; derived?: number };
+}
+
+export interface HealerActor {
+  name: string;
+  system?: { skills?: Record<string, Skill | undefined> };
+}
+
+export interface HealTarget {
+  uuid: string;
+  name: string;
+  system?: { recovery?: { die?: { value?: string; derived?: string } } };
+}
+
+export interface HealAction {
+  name: string;
+  system?: { id?: string; description?: { value?: string | null } };
+}
+
+/** The d20 total on the message the use produced, if any. */
+export type TestTotal = number | null;
+
+/** The heal request for this use, or null when the action isn't a target-rolled heal. */
+export function healRequestFor(
+  action: HealAction,
+  healer: HealerActor,
+  target: HealTarget,
+  testTotal: TestTotal,
+): Omit<HealRequest, "rolls"> | null {
+  const base = { targetUuid: target.uuid, targetName: target.name, healerName: healer.name, ability: action.name };
+  switch (action.system?.id) {
+    case "field-medicine": {
+      const die = normaliseDie(target.system?.recovery?.die?.value ?? target.system?.recovery?.die?.derived);
+      if (!die) return null;
+      const dc = parseDC((action.system?.description?.value ?? "").replace(/<[^>]+>/g, " ")) ?? 15;
+      const success = testSucceeded(testTotal, dc);
+      const ranks = Number(healer.system?.skills?.med?.rank ?? 0);
+      const note =
+        success === null
+          ? localize("Abilities.Heal.UnknownOutcome", { dc, ranks })
+          : localize(success ? "Abilities.Heal.TestSuccess" : "Abilities.Heal.TestFailure", { total: testTotal, dc });
+      // Outcome unknown (e.g. no d20 on the card): roll the die alone; the note says what to add.
+      return { ...base, formula: fieldMedicineFormula(die, ranks, success === true), note, repeatable: false };
+    }
+    case "prg": {
+      const skill = healer.system?.skills?.prg;
+      return {
+        ...base,
+        formula: regrowthFormula(Number(skill?.rank ?? 1), Number(skill?.mod?.value ?? skill?.mod?.derived ?? 0)),
+        note: localize("Abilities.Heal.RegrowthNote"),
+        repeatable: true,
+      };
+    }
+    default:
+      return null;
+  }
+}

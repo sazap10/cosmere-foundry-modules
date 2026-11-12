@@ -1,0 +1,35 @@
+<div class="tl-endeavour-card">
+  <header class="tl-endeavour-header">
+    <h3 class="tl-endeavour-name">{{name}}</h3>
+    <span class="tl-endeavour-meta">{{typeLabel}}</span>
+    <span class="tl-endeavour-status tl-endeavour-status-{{status}}">{{statusLabel}}</span>
+  </header>
+  <p class="tl-endeavour-totals">
+    {{localize "TABLE_LEDGER.Endeavour.Successes"}} <strong>{{successes}}/{{successesNeeded}}</strong> ·
+    {{localize "TABLE_LEDGER.Endeavour.Failures"}} <strong>{{failures}}/{{failuresAllowed}}</strong>
+    {{#if hasInitial}}<br><span class="hint">{{localize "TABLE_LEDGER.Endeavour.StartedWith" successes=initialSuccesses failures=initialFailures}}</span>{{/if}}
+  </p>
+  <table class="tl-endeavour-rounds">
+    <thead>
+      <tr><th>{{localize "TABLE_LEDGER.Endeavour.RoundShort"}}</th><th>{{localize "TABLE_LEDGER.Endeavour.Character"}}</th><th>{{localize "TABLE_LEDGER.Endeavour.Skill"}}</th><th>{{localize "TABLE_LEDGER.Endeavour.ResultHeader"}}</th></tr>
+    </thead>
+    <tbody>
+      {{#each rounds}}
+      {{#each contributions}}
+      <tr class="tl-endeavour-result-{{result}}">
+        <td>{{../round}}</td><td>{{actorName}}</td><td>{{skillLabel}}</td><td>{{resultLabel}}{{#if note}} — {{note}}{{/if}}</td>
+      </tr>
+      {{/each}}
+      {{/each}}
+    </tbody>
+  </table>
+  {{#if hasLog}}
+  <ul class="tl-endeavour-log">
+    {{#each log}}
+    <li class="tl-endeavour-kind-{{kind}}">
+      <strong>{{kindLabel}}</strong> ({{localize "TABLE_LEDGER.Endeavour.RoundShort"}} {{round}}){{#if actorName}} · {{actorName}}{{/if}}: {{note}}
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+</div>

@@ -1,0 +1,86 @@
+{
+  "Abilities": {
+    "Settings": {
+      "Guards": {
+        "Name": "Ask for a target",
+        "Hint": "When an attack, heal or ally ability is used with no token targeted, pick the target first, before any focus or Investiture is spent."
+      },
+      "HealPrompts": {
+        "Name": "Prompt target-rolled healing",
+        "Hint": "After Field Medicine or Progression (Regrowth), ask the target's player to roll their healing and apply it."
+      },
+      "StrikeTargeting": {
+        "Name": "Ask for a target on weapon Strikes",
+        "Hint": "Off by default: a Strike rolls against whatever is targeted, or just rolls with no target. Turn on to get the target picker for Strikes too."
+      }
+    },
+    "Apply": {
+      "NeedSelected": "No tokens to apply to. Apply buttons use your selected tokens (click a token you control). Targeted tokens (T) are ignored unless you change the Cosmere RPG setting \"Apply buttons to\" to \"Prioritise targeted\".",
+      "NeedTargeted": "No tokens to apply to. Apply buttons use your targeted tokens: hover a token and press T, then click again.",
+      "NeedEither": "No tokens to apply to. Select a token you control, or target one (hover it and press T), then click again."
+    },
+    "TalentHint": "Use its actions from the Actions tab: {names}",
+    "Onboarding": {
+      "Title": "Apply buttons",
+      "Content": "Damage and healing Apply buttons currently only affect tokens you have <em>selected</em>. Players can't select enemy tokens, so the buttons seem to do nothing. Switch Cosmere RPG's \"Apply buttons to\" to <strong>Prioritise targeted</strong> (targeted tokens first, otherwise selected)? Foundry will reload.",
+      "Accept": "Switch and reload",
+      "Decline": "Keep current setting"
+    },
+    "Audit": {
+      "Title": "Ability audit",
+      "Summary": "Scanned {scanned} actions; {findings} findings.",
+      "Rescan": "Rescan",
+      "CopyReport": "Copy report",
+      "Copied": "Audit report copied to the clipboard as Markdown.",
+      "Open": "Open item sheet",
+      "Empty": "No problems found.",
+      "WorldItems": "World items",
+      "ConfirmTitle": "Apply fix",
+      "ConfirmContent": "Change <strong>{name}</strong> ({location}): {fix}? This edits the document directly.",
+      "Fixed": "Updated {name}."
+    },
+    "Activation": {
+      "none": "No activation",
+      "utility": "Utility",
+      "skill_test": "Skill test"
+    },
+    "Reason": {
+      "skill-test-heal": "Has a skill test and a healing formula, so it rolls as an attack against the target's defences.",
+      "skill-test-damage-not-attack": "Has a skill test and a damage formula, so it rolls as an attack, but nothing in its name or description describes an attack.",
+      "charges-not-consumed": "Has charges or ammo, but none of its actions spend them, so using it never asks to consume a charge or lowers the count."
+    },
+    "Fix": {
+      "clearDamage": "Clear damage formula",
+      "setUtility": "Set activation to Utility",
+      "consumeCharge": "Make its action spend 1 charge"
+    },
+    "StrikeHint": "This doesn't roll by itself: make the attack with your weapon's Strike, then apply this effect.",
+    "Picker": {
+      "Title": "Choose a target",
+      "EnemyPrompt": "Who is {name} used against?",
+      "AllyPrompt": "Who is {name} used on?",
+      "Empty": "No tokens on this scene.",
+      "OffScene": "(not on this scene)",
+      "Self": "(you)",
+      "Use": "Use on target",
+      "NoTarget": "No target",
+      "Cancel": "Cancel"
+    },
+    "Heal": {
+      "CardHeading": "{healer} used {ability} on {target}",
+      "Roll": "Roll healing ({formula})",
+      "Rolled": "{name} recovered {total} health.",
+      "RepeatHint": "Roll again at the start of each of the target's turns while the infusion lasts.",
+      "PromptTitle": "Roll your healing",
+      "PromptContent": "{healer} used {ability} on {target}.",
+      "Later": "Later",
+      "Flavor": "{ability} (from {healer}): healing",
+      "NotOwner": "Only {name}'s owner can roll this healing.",
+      "AlreadyRolled": "This healing has already been rolled.",
+      "TestSuccess": "Medicine test {total} vs DC {dc}: success. Recovery die + Medicine ranks.",
+      "TestFailure": "Medicine test {total} vs DC {dc}: failure. Recovery die only.",
+      "UnknownOutcome": "Test result not found: rolling the recovery die only. Add {ranks} if the DC {dc} test succeeded.",
+      "RegrowthNote": "Regrowth: recover this at the start of each of your turns while infused."
+    }
+  }
+}

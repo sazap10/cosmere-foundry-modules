@@ -1,0 +1,13 @@
+<div class="tl-goals-body">
+  <label class="tl-goals-filter">
+    <input type="checkbox" data-action="toggleCompleted" {{checked hideCompleted}}>
+    {{localize "TABLE_LEDGER.Goals.Board.HideCompleted"}}
+  </label>
+  <div class="tl-goals-list">
+    {{#each rows}}
+    {{> "modules/table-ledger/templates/goals/character.hbs"}}
+    {{else}}
+    <p class="tl-goals-empty">{{@root.emptyText}}</p>
+    {{/each}}
+  </div>
+</div>

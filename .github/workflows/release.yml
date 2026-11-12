@@ -1,0 +1,45 @@
+name: Release
+
+# Push a tag "<module>-v<version>" (e.g. table-ledger-v0.2.0) to release one
+# module. modules/<module>/module.json on main is the Foundry manifest, so bump
+# its "version" and "download" in a PR first; this job refuses a mismatch.
+on:
+  push:
+    tags: ["*-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - name: Resolve module from tag
+        id: tag
+        run: |
+          tag="$GITHUB_REF_NAME"
+          module="${tag%-v*}"
+          version="${tag##*-v}"
+          dir="modules/$module"
+          test -f "$dir/module.json" || { echo "::error::no module at $dir"; exit 1; }
+          want_dl="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/${module}.zip"
+          jq -e --arg v "$version" --arg dl "$want_dl" '.version == $v and .download == $dl' "$dir/module.json" >/dev/null \
+            || { echo "::error::$dir/module.json must have version $version and download $want_dl"; exit 1; }
+          echo "module=$module" >> "$GITHUB_OUTPUT"
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+      - run: npm ci
+      - run: npm run typecheck -w ${{ steps.tag.outputs.dir }}
+      - run: npm test -w ${{ steps.tag.outputs.dir }}
+      - run: npm run zip -w ${{ steps.tag.outputs.dir }}
+      - name: Publish release
+        working-directory: ${{ steps.tag.outputs.dir }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes \
+            build/module.json "build/${{ steps.tag.outputs.module }}.zip"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

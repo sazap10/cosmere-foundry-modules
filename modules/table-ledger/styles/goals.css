@@ -1,0 +1,23 @@
+/* Goals board and player widget */
+.tl-goals .tl-goals-body { display: flex; flex-direction: column; gap: 0.5rem; }
+.tl-goals-filter { display: flex; align-items: center; gap: 0.25rem; }
+.tl-goals-character { padding: 0.25rem 0; border-bottom: 1px solid var(--color-border, #7a7971); }
+.tl-goals-character:last-child { border-bottom: none; }
+.tl-goals-character-header { display: flex; align-items: center; gap: 0.5rem; }
+.tl-goals-portrait { width: 28px; height: 28px; border: none; border-radius: 4px; object-fit: cover; }
+.tl-goals-actor { flex: 1; font-weight: bold; cursor: pointer; width: auto; min-height: 0; padding: 0; margin: 0; background: none; border: none; box-shadow: none; text-align: start; line-height: inherit; }
+.tl-goals-count { opacity: 0.7; font-size: var(--font-size-12, 12px); }
+.tl-goals-note { margin: 0.15rem 0; font-size: var(--font-size-12, 12px); opacity: 0.85; }
+.tl-goals-goals { list-style: none; margin: 0.25rem 0 0; padding: 0; }
+.tl-goals-goal { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.1rem 0; }
+.tl-goals-goal.tl-goals-complete .tl-goals-name { color: var(--tl-success); }
+.tl-goals-pips { display: inline-flex; gap: 3px; cursor: pointer; user-select: none; width: auto; min-height: 0; padding: 2px; margin: 0; background: none; border: none; box-shadow: none; line-height: 1; }
+.tl-goals-pip { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--tl-accent); }
+.tl-goals-pip-filled { background: var(--tl-accent); }
+.tl-goals-complete .tl-goals-pip { border-color: var(--tl-success); }
+.tl-goals-complete .tl-goals-pip-filled { background: var(--tl-success); }
+.tl-goals-empty { opacity: 0.7; font-style: italic; }
+.tl-goals-widget .tl-goals-collapse { align-self: flex-end; width: auto; min-height: 0; padding: 0 0.4rem; line-height: 1.4; }
+.tl-goals-card { display: flex; gap: 0.5rem; align-items: center; }
+.tl-goals-card h3 { margin: 0; border: none; color: var(--tl-success); }
+.tl-goals-card p { margin: 0.25rem 0 0; }

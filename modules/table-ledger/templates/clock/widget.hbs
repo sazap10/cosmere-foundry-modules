@@ -1,0 +1,64 @@
+{{#*inline "tlStormRows"}}
+    <dt><i class="{{nextIcon}}"></i> {{nextLabel}}</dt>
+    <dd>
+      <strong>{{next.relative}}</strong>
+      {{#if next.date}}<span class="tl-clock-muted">{{next.date}}</span>{{/if}}
+      {{#if next.confidence}}<span class="tl-clock-muted">({{localize "TABLE_LEDGER.Clock.Confidence" }}: {{next.confidence}})</span>{{/if}}
+    </dd>
+    <dt><i class="fa-solid fa-clock-rotate-left"></i> {{lastLabel}}</dt>
+    {{#if last}}
+    <dd {{#if last.notes}}data-tooltip="{{last.notes}}"{{/if}}>
+      <i class="{{last.icon}}" data-tooltip="{{last.intensity}}" aria-label="{{last.intensity}}"></i>
+      {{last.date}} <span class="tl-clock-muted">{{last.intensity}}</span>
+    </dd>
+    {{else}}
+    <dd class="tl-clock-muted">{{localize "TABLE_LEDGER.Clock.Relative.Unknown"}}</dd>
+    {{/if}}
+{{/inline}}
+<section class="tl-clock-body">
+  {{#if empty}}
+  <p class="tl-clock-empty">{{localize "TABLE_LEDGER.Clock.Empty"}}</p>
+  {{else}}
+  <header class="tl-clock-now">
+    <span class="tl-clock-date" data-tooltip="{{rawDate}}">{{date}}</span>
+    {{#if timeOfDay}}<span class="tl-clock-time">{{timeOfDay}}</span>{{/if}}
+  </header>
+  <div class="tl-clock-badges">
+    {{#if stormlight}}
+    <span class="tl-clock-badge {{#if stormlight.available}}tl-clock-badge-on{{else}}tl-clock-badge-off{{/if}}">
+      <i class="fa-solid fa-gem"></i> {{stormlight.label}}
+    </span>
+    {{/if}}
+    {{#if stale}}
+    <span class="tl-clock-badge tl-clock-badge-stale" data-tooltip="{{stale.tooltip}}">
+      <i class="fa-solid fa-hourglass-end"></i> {{stale.label}}
+    </span>
+    {{/if}}
+  </div>
+  <dl class="tl-clock-storms">
+    {{> tlStormRows next=next last=last nextIcon="fa-solid fa-wind"
+        nextLabel=(localize "TABLE_LEDGER.Clock.NextHighstorm") lastLabel=(localize "TABLE_LEDGER.Clock.LastHighstorm")}}
+  </dl>
+  {{#if everstorm}}
+  <dl class="tl-clock-storms tl-clock-everstorm">
+    {{> tlStormRows next=everstorm.next last=everstorm.last nextIcon="fa-solid fa-bolt"
+        nextLabel=(localize "TABLE_LEDGER.Clock.NextEverstorm") lastLabel=(localize "TABLE_LEDGER.Clock.LastEverstorm")}}
+  </dl>
+  {{/if}}
+  {{#if events.length}}
+  <ul class="tl-clock-events">
+    {{#each events}}
+    <li>
+      <span class="tl-clock-event-label">{{label}}</span>
+      <span class="tl-clock-muted" data-tooltip="{{date}}">{{relative}}</span>
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+  {{/if}}
+  {{#if isGM}}
+  <footer class="tl-clock-footer">
+    <button type="button" data-action="edit"><i class="fa-solid fa-pen"></i> {{localize "TABLE_LEDGER.Clock.Edit.Button"}}</button>
+  </footer>
+  {{/if}}
+</section>

@@ -1,0 +1,149 @@
+<section class="tl-endeavour-body">
+  {{#if hasEndeavour}}
+  <header class="tl-endeavour-header">
+    <h3 class="tl-endeavour-name">{{endeavour.name}}</h3>
+    <span class="tl-endeavour-meta">{{endeavour.typeLabel}} · {{localize "TABLE_LEDGER.Endeavour.Round" round=endeavour.round}}</span>
+    <span class="tl-endeavour-status tl-endeavour-status-{{endeavour.status}}">{{endeavour.statusLabel}}</span>
+    <button type="button" class="tl-endeavour-icon" data-action="toggleVisible"
+      data-tooltip="{{#if endeavour.playerVisible}}TABLE_LEDGER.Endeavour.HideFromPlayers{{else}}TABLE_LEDGER.Endeavour.ShowToPlayers{{/if}}">
+      <i class="fa-solid {{#if endeavour.playerVisible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+    </button>
+  </header>
+
+  <div class="tl-endeavour-track">
+    <span class="tl-endeavour-track-label">{{localize "TABLE_LEDGER.Endeavour.Successes"}} {{endeavour.successes}}/{{endeavour.successesNeeded}}</span>
+    <span class="tl-endeavour-pips">{{#each endeavour.successPips}}<span class="tl-endeavour-pip tl-endeavour-pip-success{{#if filled}} filled{{/if}}"></span>{{/each}}</span>
+  </div>
+  <div class="tl-endeavour-track">
+    <span class="tl-endeavour-track-label">{{localize "TABLE_LEDGER.Endeavour.Failures"}} {{endeavour.failures}}/{{endeavour.failuresAllowed}}</span>
+    <span class="tl-endeavour-pips">{{#each endeavour.failurePips}}<span class="tl-endeavour-pip tl-endeavour-pip-failure{{#if filled}} filled{{/if}}"></span>{{/each}}</span>
+  </div>
+
+  {{#if endeavour.active}}
+  <fieldset>
+    <legend>{{localize "TABLE_LEDGER.Endeavour.Round" round=endeavour.round}}</legend>
+    {{#unless hasRows}}<p class="hint">{{localize "TABLE_LEDGER.Endeavour.NoCharacters"}}</p>{{/unless}}
+    {{#each rows}}
+    <div class="tl-endeavour-row" data-actor-uuid="{{uuid}}">
+      {{#if img}}<img class="tl-endeavour-portrait" src="{{img}}" alt="">{{/if}}
+      <span class="tl-endeavour-row-name">{{name}}</span>
+      {{#if contribution}}
+      <span class="tl-endeavour-chip tl-endeavour-result-{{contribution.result}}">{{contribution.resultLabel}}{{#if contribution.skillLabel}} · {{contribution.skillLabel}}{{/if}}</span>
+      <button type="button" class="tl-endeavour-icon" data-action="undo" data-tooltip="TABLE_LEDGER.Endeavour.Undo"><i class="fa-solid fa-rotate-left"></i></button>
+      {{else}}
+      {{#if hasSkills}}
+      <select name="skill">
+        <option value="">{{localize "TABLE_LEDGER.Endeavour.Skill"}}</option>
+        {{#each skills}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+      </select>
+      {{else}}
+      <input type="text" name="skill" maxlength="60" value="{{declaration.skill}}" placeholder="{{localize "TABLE_LEDGER.Endeavour.Skill"}}">
+      {{/if}}
+      <input type="text" name="note" maxlength="500" placeholder="{{localize "TABLE_LEDGER.Endeavour.Note"}}">
+      {{#each results}}
+      <button type="button" class="tl-endeavour-result-{{value}}" data-action="record" data-result="{{value}}">{{label}}</button>
+      {{/each}}
+      {{/if}}
+      {{#if declaration}}
+      <p class="hint tl-endeavour-declared">{{localize "TABLE_LEDGER.Endeavour.DeclaredIntent" skill=declaration.skillLabel}}{{#if declaration.note}} — {{declaration.note}}{{/if}}</p>
+      {{/if}}
+    </div>
+    {{/each}}
+  </fieldset>
+
+  <fieldset class="tl-endeavour-note">
+    <legend>{{localize "TABLE_LEDGER.Endeavour.LogTitle"}}</legend>
+    <select name="kind">{{#each noteKinds}}<option value="{{value}}">{{label}}</option>{{/each}}</select>
+    <select name="actorUuid">
+      <option value="">{{localize "TABLE_LEDGER.Endeavour.NoCharacter"}}</option>
+      {{#each noteActors}}<option value="{{uuid}}">{{name}}</option>{{/each}}
+    </select>
+    <input type="text" name="note" maxlength="500" placeholder="{{localize "TABLE_LEDGER.Endeavour.Note"}}">
+    <button type="button" data-action="addNote"><i class="fa-solid fa-plus"></i> {{localize "TABLE_LEDGER.Endeavour.AddNote"}}</button>
+  </fieldset>
+
+  <div class="tl-endeavour-controls">
+    <button type="button" data-action="nextRound"><i class="fa-solid fa-forward"></i> {{localize "TABLE_LEDGER.Endeavour.NextRound"}}</button>
+    {{#each endStatuses}}
+    <button type="button" class="tl-endeavour-end-{{value}}" data-action="end" data-status="{{value}}">{{label}}</button>
+    {{/each}}
+  </div>
+  {{else}}
+  <div class="tl-endeavour-controls">
+    <button type="button" data-action="clear"><i class="fa-solid fa-xmark"></i> {{localize "TABLE_LEDGER.Endeavour.Clear"}}</button>
+  </div>
+  {{/if}}
+
+  {{#if endeavour.log.length}}
+  <ul class="tl-endeavour-log">
+    {{#each endeavour.log}}
+    <li class="tl-endeavour-kind-{{kind}}"><strong>{{kindLabel}}</strong> ({{localize "TABLE_LEDGER.Endeavour.RoundShort"}} {{round}}){{#if actorName}} · {{actorName}}{{/if}}: {{note}}</li>
+    {{/each}}
+  </ul>
+  {{/if}}
+
+  <details class="tl-endeavour-history-rounds">
+    <summary>{{localize "TABLE_LEDGER.Endeavour.RoundsTitle"}}</summary>
+    <table class="tl-endeavour-rounds">
+      <tbody>
+        {{#each endeavour.rounds}}
+        {{#each contributions}}
+        <tr class="tl-endeavour-result-{{result}}"><td>{{../round}}</td><td>{{actorName}}</td><td>{{skillLabel}}</td><td>{{resultLabel}}{{#if note}} — {{note}}{{/if}}</td></tr>
+        {{/each}}
+        {{/each}}
+      </tbody>
+    </table>
+  </details>
+  {{/if}}
+
+  {{#if showStart}}
+  <fieldset class="tl-endeavour-start">
+    <legend>{{localize "TABLE_LEDGER.Endeavour.StartTitle"}}</legend>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Endeavour.Name"}}</label>
+      <input type="text" name="name" maxlength="100" required>
+    </div>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Endeavour.TypeLabel"}}</label>
+      <select name="type">{{#each types}}<option value="{{value}}">{{label}}</option>{{/each}}</select>
+    </div>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Endeavour.DifficultyLabel"}}</label>
+      <select name="difficulty">{{#each difficulties}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </div>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Endeavour.CustomThresholds"}}</label>
+      <div class="tl-endeavour-pair">
+        <input type="number" name="successesNeeded" min="1" max="50" step="1" placeholder="9">
+        <span>/</span>
+        <input type="number" name="failuresAllowed" min="1" max="50" step="1" placeholder="4">
+      </div>
+    </div>
+    <p class="hint">{{localize "TABLE_LEDGER.Endeavour.CustomHint"}}</p>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Endeavour.Starting"}}</label>
+      <div class="tl-endeavour-pair">
+        <input type="number" name="initialSuccesses" min="0" max="49" step="1" value="0" data-tooltip="TABLE_LEDGER.Endeavour.Successes">
+        <span>/</span>
+        <input type="number" name="initialFailures" min="0" max="49" step="1" value="0" data-tooltip="TABLE_LEDGER.Endeavour.Failures">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>{{localize "TABLE_LEDGER.Endeavour.PlayerVisible"}}</label>
+      <input type="checkbox" name="playerVisible" checked>
+    </div>
+    <button type="button" data-action="start"><i class="fa-solid fa-play"></i> {{localize "TABLE_LEDGER.Endeavour.Start"}}</button>
+  </fieldset>
+  {{/if}}
+
+  {{#if hasHistory}}
+  <details class="tl-endeavour-history">
+    <summary>{{localize "TABLE_LEDGER.Endeavour.HistoryTitle"}}</summary>
+    <ul>
+      {{#each history}}
+      <li><strong>{{name}}</strong> — <span class="tl-endeavour-status-{{status}}">{{statusLabel}}</span> ({{successes}}/{{successesNeeded}} · {{failures}}/{{failuresAllowed}}, {{localize "TABLE_LEDGER.Endeavour.Rounds" count=rounds}})</li>
+      {{/each}}
+    </ul>
+  </details>
+  {{/if}}
+</section>

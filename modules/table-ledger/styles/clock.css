@@ -1,0 +1,104 @@
+/* World clock widget */
+.tl-clock .window-content {
+  padding: 0.5rem 0.75rem;
+}
+
+.tl-clock-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.tl-clock-now {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tl-clock-date {
+  font-size: 1.15em;
+  font-weight: bold;
+}
+
+.tl-clock-muted,
+.tl-clock-empty {
+  opacity: 0.75;
+  font-size: 0.9em;
+}
+
+.tl-clock-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tl-clock-badges:empty {
+  display: none;
+}
+
+.tl-clock-badge {
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.85em;
+  border: 1px solid currentColor;
+}
+
+.tl-clock-badge-on {
+  color: var(--tl-accent);
+}
+
+.tl-clock-badge-off {
+  opacity: 0.7;
+}
+
+.tl-clock-badge-stale {
+  color: var(--tl-failure);
+}
+
+.tl-clock-storms {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.2rem 0.5rem;
+  margin: 0;
+}
+
+.tl-clock-storms dt {
+  font-weight: bold;
+}
+
+.tl-clock-storms dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: baseline;
+}
+
+.tl-clock-events {
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem 0 0;
+  border-top: 1px solid var(--color-border, rgba(127, 127, 127, 0.4));
+}
+
+.tl-clock-events li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tl-clock-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tl-clock-footer button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+/* GM edit form */
+.tl-clock-edit-body fieldset {
+  margin-bottom: 0.5rem;
+}

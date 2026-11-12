@@ -1,0 +1,51 @@
+/* Endeavour tracker: HUD, GM panel, chat card. */
+.tl-endeavour-body { display: flex; flex-direction: column; gap: 0.5rem; }
+.tl-endeavour-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; }
+.tl-endeavour-name { margin: 0; flex: 1 1 auto; border: none; }
+.tl-endeavour-meta { opacity: 0.8; font-size: 0.9em; }
+
+.tl-endeavour-status { padding: 0 0.4em; border-radius: 3px; font-weight: bold; }
+.tl-endeavour-status-succeeded { color: var(--tl-success); }
+.tl-endeavour-status-failed { color: var(--tl-failure); }
+.tl-endeavour-status-abandoned { opacity: 0.7; }
+.tl-endeavour-status-active { color: var(--tl-accent); }
+
+.tl-endeavour-track { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.tl-endeavour-pips { display: flex; flex-wrap: wrap; gap: 3px; }
+.tl-endeavour-pip { width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; opacity: 0.5; }
+.tl-endeavour-pip.filled { opacity: 1; }
+.tl-endeavour-pip-success { color: var(--tl-success); }
+.tl-endeavour-pip-success.filled { background: var(--tl-success); }
+.tl-endeavour-pip-failure { color: var(--tl-failure); }
+.tl-endeavour-pip-failure.filled { background: var(--tl-failure); }
+
+.tl-endeavour-party, .tl-endeavour-declarations, .tl-endeavour-log, .tl-endeavour-history ul { list-style: none; margin: 0; padding: 0; }
+.tl-endeavour-party li { display: flex; justify-content: space-between; }
+.tl-endeavour-chip { font-size: 0.85em; padding: 0 0.4em; border-radius: 3px; border: 1px solid currentColor; }
+.tl-endeavour-result-success { color: var(--tl-success); }
+.tl-endeavour-result-failure { color: var(--tl-failure); }
+.tl-endeavour-result-none, .tl-endeavour-result-pending { opacity: 0.75; }
+
+.tl-endeavour-declare, .tl-endeavour-note, .tl-endeavour-controls { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
+.tl-endeavour-declare input[name="note"], .tl-endeavour-note input[name="note"] { flex: 1 1 10rem; }
+
+.tl-endeavour-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; padding: 0.25rem 0; border-bottom: 1px solid rgba(127, 127, 127, 0.3); }
+.tl-endeavour-row-name { flex: 1 1 8rem; font-weight: bold; }
+.tl-endeavour-row input[name="note"] { flex: 1 1 6rem; }
+.tl-endeavour-row button { flex: 0 0 auto; width: auto; }
+.tl-endeavour-declared { flex-basis: 100%; margin: 0; }
+.tl-endeavour-portrait { width: 28px; height: 28px; border: none; object-fit: cover; }
+.tl-endeavour-icon { flex: 0 0 auto; width: auto; background: none; border: none; }
+
+.tl-endeavour-kind-opportunity strong { color: var(--tl-success); }
+.tl-endeavour-kind-complication strong { color: var(--tl-failure); }
+
+.tl-endeavour-rounds { width: 100%; font-size: 0.9em; }
+.tl-endeavour-rounds td, .tl-endeavour-rounds th { padding: 1px 4px; text-align: left; }
+.tl-endeavour-card .tl-endeavour-totals { margin: 0.25rem 0; }
+
+/* Start form: "successes / failures" inputs on one line (the panel isn't a
+   standard-form, so core's .form-fields row layout doesn't apply). */
+.tl-endeavour-pair { display: flex; align-items: center; gap: 0.5rem; }
+.tl-endeavour-pair input { flex: 1 1 0; min-width: 0; width: auto; }
+.tl-endeavour-pair span { flex: none; }

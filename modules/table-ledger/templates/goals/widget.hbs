@@ -1,0 +1,13 @@
+<div class="tl-goals-body{{#if collapsed}} tl-goals-collapsed{{/if}}">
+  <button type="button" class="tl-goals-collapse" data-action="toggleCollapsed"
+          data-tooltip="{{#if collapsed}}TABLE_LEDGER.Goals.Widget.Expand{{else}}TABLE_LEDGER.Goals.Widget.Collapse{{/if}}">
+    <i class="fa-solid {{#if collapsed}}fa-chevron-down{{else}}fa-chevron-up{{/if}}"></i>
+  </button>
+  <div class="tl-goals-list">
+    {{#each rows}}
+    {{> "modules/table-ledger/templates/goals/character.hbs"}}
+    {{else}}
+    <p class="tl-goals-empty">{{@root.emptyText}}</p>
+    {{/each}}
+  </div>
+</div>
