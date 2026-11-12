@@ -109,7 +109,7 @@ async function strikeWith(item: ImprovisedItem): Promise<void> {
 }
 
 function onPreUseItem(item: ImprovisedItem | undefined): false | void {
-  if (item?.type !== "action" || !item.getFlag(MODULE_ID, ENTRY_FLAG)) return;
+  if (!enabled() || item?.type !== "action" || !item.getFlag(MODULE_ID, ENTRY_FLAG)) return;
   void strikeWith(item).catch((err: unknown) => ui.notifications.error(err instanceof Error ? err.message : String(err)));
   return false;
 }

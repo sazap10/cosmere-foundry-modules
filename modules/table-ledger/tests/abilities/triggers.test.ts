@@ -177,6 +177,32 @@ describe("parseTag", () => {
   });
 });
 
+describe("tag restrictions and riders", () => {
+  const tag = { id: "t", name: "T", trigger: { kind: "weapon-attack" }, outcome: "any", effect: "follow-up", followUp: "x", cost: "normal", limit: "none" };
+
+  it("rejects a mandatory effect other than the heal bonus", () => {
+    expect(parseTag({ ...tag, optional: false }).ok).toBe(false);
+  });
+
+  it("accepts the heal bonus only as a mandatory heal-other trigger", () => {
+    const bonus = { ...tag, effect: "heal-bonus", followUp: undefined };
+    expect(parseTag({ ...bonus, trigger: { kind: "heal-other" } }).ok).toBe(false);
+    expect(parseTag({ ...bonus, optional: false }).ok).toBe(false);
+    expect(parseTag({ ...bonus, optional: false, trigger: { kind: "heal-other" } }).ok).toBe(true);
+  });
+
+  it("rejects heal-other with any other effect", () => {
+    expect(parseTag({ ...tag, trigger: { kind: "heal-other" } }).ok).toBe(false);
+  });
+
+  it("applies an outcome-limited rider only on that outcome", () => {
+    const rider = rule({ optional: false, outcome: "miss", effect: "heal-bonus" });
+    expect(matchTriggers(use({ d20: 20 }), [rider]).riders).toEqual([]);
+    expect(matchTriggers(use({ d20: 1 }), [rider]).riders).toEqual([rider]);
+    expect(matchTriggers(use({ d20: null }), [rider]).riders).toEqual([]);
+  });
+});
+
 describe("rulesFor", () => {
   const builtIn = rule({ id: "built-in" });
   const tag = {

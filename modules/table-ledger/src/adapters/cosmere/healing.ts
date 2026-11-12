@@ -7,7 +7,7 @@
 // - Progression (`prg`), Character Regrowth: the target recovers 1d4 +
 //   Progression modifier at the start of each of their turns while infused
 //   (die grows with ranks), so the request can be rolled again each turn.
-import { localize } from "../../constants";
+import { MODULE_ID, localize } from "../../constants";
 import type { HealRequest } from "../../abilities/heal-prompt";
 import { fieldMedicineFormula, normaliseDie, parseDC, regrowthFormula, testSucceeded, withHealBonus } from "../../abilities/healing";
 import { matchTriggers, type UseDescription } from "../../abilities/triggers";
@@ -61,6 +61,7 @@ export function healRequestFor(
 }
 
 function healBonus(healer: HealerActor, target: HealTarget): number {
+  if (game.settings.get(MODULE_ID, "abilityTriggers") !== true) return 0;
   if (healer.uuid && healer.uuid === target.uuid) return 0;
   const rules = (healer.items ? [...healer.items] : []).flatMap((item) => rulesOfItem(item).rules);
   const heal: UseDescription = { weapon: false, melee: false, attack: false, healsOther: true, d20: null, targets: [] };

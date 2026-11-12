@@ -116,14 +116,17 @@ function defencesOf(actor: TriggerActor | null | undefined): Record<Defence, num
 function findCard(item: TriggerItem): CardMessage | undefined {
   const messages: CardMessage[] = game.messages.contents;
   return messages.findLast(
-    (m) => m.author?.id === game.user.id && m.flags?.[SYSTEM_ID]?.message?.item === item.uuid && !m.getFlag(MODULE_ID, SOURCE_FLAG),
+    (m) => {
+      const ref = m.flags?.[SYSTEM_ID]?.message?.item;
+      return m.author?.id === game.user.id && (ref === item.uuid || (!!item.id && ref === item.id)) && !m.getFlag(MODULE_ID, SOURCE_FLAG);
+    },
   );
 }
 
 function describeUse(item: TriggerItem, card: CardMessage, deps: TriggerDeps): UseDescription {
   const id = item.system?.id ?? "";
   const parent = item.parent && "getFlag" in item.parent ? item.parent : undefined;
-  const weapon = deps.isStrike(item) || id === "strike" || id.startsWith("strike-") || parent?.type === "weapon";
+  const weapon = deps.isStrike(item) || id === "strike" || id.startsWith("strike-");
   // The basic Strike action has no weapon behind it; assume melee until told otherwise.
   const melee = parent?.type === "weapon" ? parent.system?.attack?.type !== "ranged" : true;
   const normalised = deps.normalise(item);
@@ -134,6 +137,7 @@ function describeUse(item: TriggerItem, card: CardMessage, deps: TriggerDeps): U
     weapon,
     melee,
     attack: weapon || needsTarget(normalised),
+    // Only the heal bonus triggers on a heal, and the heal path applies it itself.
     healsOther: false,
     d20: d20 ? d20.total : null,
     targets: targetsOf(card),
@@ -369,7 +373,9 @@ async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | {
 
   const override = source.override;
   const rollData = attacker.getRollData();
-  const formula = override && !override.includes("@damage") ? override : dicePart(source.formula ?? "0", rollData);
+  const base = dicePart(source.formula ?? "0", rollData);
+  // The system substitutes the base damage for @damage in a graze override.
+  const formula = override ? override.replaceAll("@damage", `(${base})`) : base;
   const roll = new foundry.dice.Roll(formula, rollData);
   await roll.evaluate();
   await message.setFlag(MODULE_ID, "grazed", targetUuid);

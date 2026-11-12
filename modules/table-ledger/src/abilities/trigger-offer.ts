@@ -118,6 +118,16 @@ async function save(message: TriggerMessage, state: TriggerCardState): Promise<v
 }
 
 const pending = new Set<string>();
+const saves = new Map<string, Promise<unknown>>();
+
+/** Run `task` after earlier saves to the same card, so concurrent offers can't overwrite each other's taken mark. */
+function inOrder(messageId: string, task: () => Promise<void>): Promise<void> {
+  const run = (saves.get(messageId) ?? Promise.resolve()).then(task, task);
+  saves.set(messageId, run);
+  return run.finally(() => {
+    if (saves.get(messageId) === run) saves.delete(messageId);
+  });
+}
 
 /** Use one offer from the popup or the card. Re-checks everything against the card's current state. */
 export async function useOffer(messageId: string, ruleId: string): Promise<void> {
@@ -125,9 +135,10 @@ export async function useOffer(messageId: string, ruleId: string): Promise<void>
   const state = stateOf(message);
   if (!message || !state || !host) return;
   if (!canUse(message)) return;
-  const key = `${messageId}:${ruleId}`;
-  if (pending.has(key)) return;
   const offer = viewOf(state).offers.find((o) => o.rule.id === ruleId);
+  // A once-per-round talent is locked by the talent, so a sibling card can't start a second use meanwhile.
+  const key = offer?.rule.limit === "round" ? `${state.sources[ruleId]}:${ruleId}` : `${messageId}:${ruleId}`;
+  if (pending.has(key)) return;
   if (!offer || offer.status !== "open") {
     ui.notifications.warn(offer && offer.status !== "open" ? localize(STATUS_KEYS[offer.status]) : localize("Triggers.Status.expired"));
     refresh(messageId);
@@ -136,8 +147,10 @@ export async function useOffer(messageId: string, ruleId: string): Promise<void>
   pending.add(key);
   try {
     if (!(await host.use(state, offer))) return;
-    const fresh = stateOf(messageOf(messageId)) ?? state;
-    await save(message, { ...fresh, taken: [...new Set([...fresh.taken, ruleId])] });
+    await inOrder(messageId, async () => {
+      const fresh = stateOf(messageOf(messageId)) ?? state;
+      await save(message, { ...fresh, taken: [...new Set([...fresh.taken, ruleId])] });
+    });
   } catch (err) {
     ui.notifications.error(err instanceof Error ? err.message : String(err));
   } finally {

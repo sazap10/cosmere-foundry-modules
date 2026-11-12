@@ -103,7 +103,9 @@ export function matchTriggers(use: UseDescription, rules: TriggerRule[], answer?
   for (const rule of rules) {
     if (!matchesKind(use, rule)) continue;
     if (!rule.optional) {
-      result.riders.push(rule);
+      // Riders are applied without asking, so an outcome-dependent one needs its outcome known and matching.
+      const outcome = rule.outcome === "any" ? null : (answer ?? computeOutcome(use, rule));
+      if (rule.outcome === "any" || outcome === rule.outcome) result.riders.push(rule);
       continue;
     }
     if (result.offers.some((offer) => offer.rule.id === rule.id)) continue;
@@ -157,6 +159,11 @@ export function parseTag(raw: unknown): ParsedTag {
   if ((t.effect === "follow-up" || t.effect === "replacement-heal") && !followUp) {
     return { ok: false, reason: "this effect needs a follow-up item" };
   }
+  const optional = t.optional !== false;
+  // The only mandatory effect is the heal bonus, which only applies to heals given to someone else.
+  if ((t.effect === "heal-bonus") !== !optional) return { ok: false, reason: "only the heal bonus is applied without asking, and it can't be offered" };
+  if (t.effect === "heal-bonus" && trigger.kind !== "heal-other") return { ok: false, reason: "the heal bonus triggers on a heal given to another character" };
+  if (trigger.kind === "heal-other" && t.effect !== "heal-bonus") return { ok: false, reason: "only the heal bonus can trigger on a heal given to another character" };
   const note = typeof t.note === "string" ? t.note.trim() : "";
   if (note.length > NOTE_LIMIT) return { ok: false, reason: `note is longer than ${NOTE_LIMIT} characters` };
   const amount = t.amount === undefined ? undefined : Number(t.amount);
@@ -175,7 +182,7 @@ export function parseTag(raw: unknown): ParsedTag {
       ...(followUp ? { followUp } : {}),
       cost: t.cost,
       limit: t.limit,
-      optional: t.optional !== false,
+      optional,
       ...(note ? { note } : {}),
       ...(amount !== undefined ? { amount } : {}),
     },
