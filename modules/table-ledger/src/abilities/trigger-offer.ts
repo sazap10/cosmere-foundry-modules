@@ -136,7 +136,8 @@ export async function useOffer(messageId: string, ruleId: string): Promise<void>
   pending.add(key);
   try {
     if (!(await host.use(state, offer))) return;
-    await save(message, { ...state, taken: [...state.taken, ruleId] });
+    const fresh = stateOf(messageOf(messageId)) ?? state;
+    await save(message, { ...fresh, taken: [...new Set([...fresh.taken, ruleId])] });
   } catch (err) {
     ui.notifications.error(err instanceof Error ? err.message : String(err));
   } finally {

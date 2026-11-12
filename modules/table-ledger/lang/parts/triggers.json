@@ -9,6 +9,23 @@
     "Skip": "Skip",
     "Later": "Decide later",
     "CardHint": "Anything you skip stays on the chat card until the round ends.",
+    "NotEnoughFocus": "Not enough focus: this needs {amount}.",
+    "FocusSpent": "{actor} spent {amount} focus on {name}.",
+    "ReplacementHealFlavor": "{name}: replacement heal",
+    "ReplacementHealNote": "{name} replaced the original heal.",
+    "Graze": {
+      "Name": "Graze",
+      "ChooseTitle": "Graze",
+      "Choose": "Choose the target to graze.",
+      "Flavor": "{attacker} grazes {target}",
+      "Error": {
+        "unknown": "That attack card can't be found.",
+        "notOwner": "Only the attacker can graze from this card.",
+        "alreadyGrazed": "This attack has already grazed.",
+        "notTargeted": "That target wasn't part of the attack.",
+        "notOnScene": "The target isn't on the attacker's scene."
+      }
+    },
     "Summary": {
       "followUp": "Use {name}",
       "followUpFree": "Use {name} with no focus cost",

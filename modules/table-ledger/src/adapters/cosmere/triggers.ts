@@ -52,7 +52,7 @@ interface TriggerActor {
   applyHealing(amount: number): Promise<unknown>;
   applyDamage(instances: { amount: number; type: string }[]): Promise<unknown>;
   testUserPermission(user: unknown, level: "OWNER"): boolean;
-  getActiveTokens(linked?: boolean, document?: boolean): { parent?: unknown }[];
+  getDependentTokens(): { parent?: unknown }[];
 }
 
 interface CardMessage {
@@ -315,7 +315,6 @@ function dicePart(formula: string, data: Record<string, unknown>): string {
  * choice is taken from them, and only for the attacker's own card; the GM rolls
  * the item's graze dice itself and grazes each card once.
  */
-
 async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | { ok: false; error: string }> {
   const payload = data && typeof data === "object" ? data : {};
   const sourceMessageId = "sourceMessageId" in payload ? payload.sourceMessageId : undefined;
@@ -326,13 +325,14 @@ async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | {
   const item: TriggerItem | null = typeof itemUuid === "string" ? await fromUuid(itemUuid) : null;
   const attacker = item?.actor;
   if (!message || !item || !attacker) return { ok: false, error: "unknown" };
-  if (!attacker.testUserPermission(caller, "OWNER")) return { ok: false, error: "notOwner" };
+  if (message.author?.id !== caller.id || !attacker.testUserPermission(caller, "OWNER")) return { ok: false, error: "notOwner" };
   if (message.getFlag(MODULE_ID, "grazed")) return { ok: false, error: "alreadyGrazed" };
   const recorded = message.flags?.[SYSTEM_ID]?.message?.targets ?? [];
   if (recorded.length && !recorded.some((t) => t.uuid === targetUuid)) return { ok: false, error: "notTargeted" };
   const target: TriggerActor | null = await fromUuid(targetUuid);
-  const scene = attacker.getActiveTokens(false, true)[0]?.parent;
-  if (!target || !scene || !target.getActiveTokens(false, true).some((t) => t.parent === scene)) return { ok: false, error: "notOnScene" };
+  const attackerScenes = attacker.getDependentTokens().map((t) => t.parent);
+  const onScene = target?.getDependentTokens().some((t) => attackerScenes.includes(t.parent));
+  if (!target || !onScene) return { ok: false, error: "notOnScene" };
 
   const damage = item.system?.damage;
   const override = damage?.grazeOverrideFormula;
