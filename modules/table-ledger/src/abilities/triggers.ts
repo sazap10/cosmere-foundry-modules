@@ -1,18 +1,7 @@
-// Pure trigger logic: which talents fire on a use, what the outcome was, what
-// the follow-up costs, and when an offer or a once-per-round limit lapses.
-// No Foundry globals. The adapter describes a use as a `UseDescription` and
-// supplies rules; everything here works on those shapes.
+// Pure trigger logic. No Foundry globals: the adapter describes a use as a
+// `UseDescription` and supplies rules.
 
-export type TriggerKind =
-  /** A weapon attack: the Strike action or any weapon item. */
-  | "weapon-attack"
-  | "melee-weapon-attack"
-  /** Any action that compares a d20 against a defence. */
-  | "attack"
-  /** One action, by system id. */
-  | "action"
-  /** A heal given to another character. */
-  | "heal-other";
+export type TriggerKind = "weapon-attack" | "melee-weapon-attack" | "attack" | "action" | "heal-other";
 
 export type TriggerOutcome = "any" | "hit" | "miss";
 export type TriggerEffect = "follow-up" | "graze" | "focus-spend" | "replacement-heal" | "heal-bonus";
@@ -37,7 +26,6 @@ export interface TriggerRule {
   optional: boolean;
   /** Shown with the offer, e.g. a condition the module can't check. */
   note?: string;
-  /** Focus the effect spends (focus-spend). */
   amount?: number;
 }
 
@@ -48,15 +36,12 @@ export interface UseTarget {
 
 /** One use of an action, as the adapter read it from the system's card. */
 export interface UseDescription {
-  /** The used item's system id, when it has one. */
   actionId?: string;
   weapon: boolean;
   melee: boolean;
-  /** A d20 is compared against a defence. */
   attack: boolean;
   healsOther: boolean;
   d20: number | null;
-  /** Targets the system recorded on the card. */
   targets: UseTarget[];
   /** Defences of a target the target picker supplied when the card recorded none (off-scene allies). */
   pickedDef?: Record<Defence, number>;
@@ -136,14 +121,17 @@ export function matchTriggers(use: UseDescription, rules: TriggerRule[], answer?
   return result;
 }
 
-const KINDS: readonly TriggerKind[] = ["weapon-attack", "melee-weapon-attack", "attack", "action", "heal-other"];
-const OUTCOMES: readonly TriggerOutcome[] = ["any", "hit", "miss"];
-const EFFECTS: readonly TriggerEffect[] = ["follow-up", "graze", "focus-spend", "replacement-heal", "heal-bonus"];
-const COSTS: readonly TriggerCost[] = ["normal", "waived", "waived-on-miss"];
-const LIMITS: readonly TriggerLimit[] = ["none", "round"];
+export const KINDS: readonly TriggerKind[] = ["weapon-attack", "melee-weapon-attack", "attack", "action", "heal-other"];
+export const OUTCOMES: readonly TriggerOutcome[] = ["any", "hit", "miss"];
+export const EFFECTS: readonly TriggerEffect[] = ["follow-up", "graze", "focus-spend", "replacement-heal", "heal-bonus"];
+export const COSTS: readonly TriggerCost[] = ["normal", "waived", "waived-on-miss"];
+export const LIMITS: readonly TriggerLimit[] = ["none", "round"];
 const DEFENCES: readonly Defence[] = ["phy", "cog", "spi"];
 
 export const NOTE_LIMIT = 200;
+
+/** Item flag holding a trigger tag. */
+export const TAG_FLAG = "trigger";
 
 export type ParsedTag = { ok: true; rule: TriggerRule } | { ok: false; reason: string };
 

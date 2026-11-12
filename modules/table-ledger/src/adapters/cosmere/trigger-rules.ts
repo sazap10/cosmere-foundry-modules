@@ -22,7 +22,8 @@
 // "As 0" means no action cost, which the system never spends; only the focus
 // side of a cost is modelled. Plot-die talents (Opportunist, Sure Outcome) are
 // not use triggers and are not listed.
-import type { TriggerRule } from "../../abilities/triggers";
+import { MODULE_ID } from "../../constants";
+import { rulesFor, TAG_FLAG, type TriggerRule } from "../../abilities/triggers";
 
 const base = { outcome: "any", limit: "none", optional: true, cost: "normal" } as const;
 
@@ -118,3 +119,8 @@ export const BUILT_IN_RULES: Record<string, TriggerRule[]> = {
     },
   ],
 };
+
+/** An item's trigger rules: its tag if valid, else the built-in rules for its system id. */
+export function rulesOfItem(item: { system?: { id?: string }; getFlag?(scope: string, key: string): unknown }): { rules: TriggerRule[]; invalid?: string } {
+  return rulesFor({ systemId: item.system?.id, tag: item.getFlag?.(MODULE_ID, TAG_FLAG) }, BUILT_IN_RULES);
+}

@@ -1,9 +1,5 @@
-// Cosmere RPG side of optional ability triggers: read a use from the system's
-// chat card, collect the actor's rules, post the offer, and carry each effect
-// out. The pure rules live in `abilities/triggers.ts`; the surfaces in
-// `abilities/trigger-offer.ts`.
 import { MODULE_ID, localize } from "../../constants";
-import { askGM, registerQuery, type QueryUser } from "../../queries";
+import { askGM, registerQuery, serialize, type QueryUser } from "../../queries";
 import { pickTarget } from "../../abilities/target-picker";
 import { needsTarget } from "../../abilities/audit-rules";
 import { openTriggerPopup, postTriggerCard, registerTriggerOffers, type TriggerHost } from "../../abilities/trigger-offer";
@@ -11,7 +7,6 @@ import {
   defenceFromText,
   matchTriggers,
   matchesKind,
-  rulesFor,
   type Defence,
   type OfferView,
   type TriggerCardState,
@@ -19,11 +14,10 @@ import {
   type UseDescription,
   type UseTarget,
 } from "../../abilities/triggers";
-import { BUILT_IN_RULES } from "./trigger-rules";
+import { rulesOfItem } from "./trigger-rules";
 
 const SYSTEM_ID = "cosmere-rpg";
 const ENABLED_SETTING = "abilityTriggers";
-const TAG_FLAG = "trigger";
 const LIMITS_FLAG = "limits";
 const SOURCE_FLAG = "triggered";
 
@@ -75,11 +69,8 @@ interface CardMessage {
 }
 
 export interface TriggerDeps {
-  /** Weapon strikes are rebuilt from the weapon on every prepare. */
   isStrike(item: TriggerItem): boolean;
-  /** The audit's normalised view of an action's data. */
   normalise(item: TriggerItem): Parameters<typeof needsTarget>[0];
-  /** The target the picker chose for this use, if any. */
   pickedTarget(item: TriggerItem): string | undefined;
   /** Resolves once a target-picker veto and re-run for this item has finished. */
   pickFlight(item: TriggerItem): Promise<void> | undefined;
@@ -90,19 +81,19 @@ const enabled = (): boolean => game.settings.get(MODULE_ID, ENABLED_SETTING) ===
 /** Follow-ups started from an offer: their use must not raise offers, and its hook says it happened. */
 const followUps = new Map<TriggerItem, boolean>();
 
-const asNumber = (value: unknown): number => (typeof value === "number" ? value : 10);
+const defenceOrDefault = (value: unknown): number => (typeof value === "number" ? value : 10);
 
 function targetsOf(card: CardMessage): UseTarget[] {
   return (card.flags?.[SYSTEM_ID]?.message?.targets ?? []).map((t) => ({
     uuid: t.uuid,
-    def: { phy: asNumber(t.def?.phy), cog: asNumber(t.def?.cog), spi: asNumber(t.def?.spi) },
+    def: { phy: defenceOrDefault(t.def?.phy), cog: defenceOrDefault(t.def?.cog), spi: defenceOrDefault(t.def?.spi) },
   }));
 }
 
 function defencesOf(actor: TriggerActor | null | undefined): Record<Defence, number> | undefined {
   const d = actor?.system?.defenses;
   if (!d) return undefined;
-  return { phy: asNumber(d.phy?.value), cog: asNumber(d.cog?.value), spi: asNumber(d.spi?.value) };
+  return { phy: defenceOrDefault(d.phy?.value), cog: defenceOrDefault(d.cog?.value), spi: defenceOrDefault(d.spi?.value) };
 }
 
 /** The system's card for this use: the newest by this user for this item that hasn't raised offers yet. */
@@ -117,9 +108,8 @@ function describeUse(item: TriggerItem, card: CardMessage, deps: TriggerDeps): U
   const id = item.system?.id ?? "";
   const parent = item.parent && "getFlag" in item.parent ? item.parent : undefined;
   const weapon = deps.isStrike(item) || id === "strike" || id.startsWith("strike-") || parent?.type === "weapon";
-  const parentWeapon = parent;
   // The basic Strike action has no weapon behind it; assume melee until told otherwise.
-  const melee = parentWeapon?.type === "weapon" ? parentWeapon.system?.attack?.type !== "ranged" : true;
+  const melee = parent?.type === "weapon" ? parent.system?.attack?.type !== "ranged" : true;
   const normalised = deps.normalise(item);
   const d20 = card.rolls?.find((r) => r.dice?.[0]?.faces === 20);
   const picked = deps.pickedTarget(item);
@@ -155,7 +145,7 @@ function followUpAction(actor: TriggerActor, systemId: string): { item: TriggerI
 function collectRules(actor: TriggerActor, use: UseDescription): Collected {
   const out: Collected = { rules: [], sources: {}, labels: {}, missing: [] };
   for (const item of actor.items) {
-    const { rules, invalid } = rulesFor({ systemId: item.system?.id, tag: item.getFlag(MODULE_ID, TAG_FLAG) }, BUILT_IN_RULES);
+    const { rules, invalid } = rulesOfItem(item);
     if (invalid) console.warn(`${MODULE_ID} | ${item.name}: trigger tag ignored (${invalid})`);
     for (const rule of rules) {
       if (!matchesKind(use, rule)) continue;
@@ -187,6 +177,7 @@ async function onUse(item: TriggerItem | undefined, deps: TriggerDeps): Promise<
   const collected = collectRules(actor, use);
   const matches = matchTriggers(use, collected.rules);
   if (!matches.offers.length && !matches.askOutcome) return;
+  const combat = combatPoint();
   const state: TriggerCardState = {
     sourceMessageId: card.id,
     actorUuid: actor.uuid,
@@ -197,7 +188,7 @@ async function onUse(item: TriggerItem | undefined, deps: TriggerDeps): Promise<
     sources: collected.sources,
     missing: collected.missing,
     taken: [],
-    posted: combatPoint() && { combatId: combatPoint()!.id, round: combatPoint()!.round },
+    posted: combat && { combatId: combat.id, round: combat.round },
   };
   const messageId = await postTriggerCard(state, { speaker: card.speaker, whisper: card.whisper, blind: card.blind });
   await card.setFlag(MODULE_ID, SOURCE_FLAG, true);
@@ -213,8 +204,7 @@ async function recordLimit(state: TriggerCardState, rule: TriggerRule): Promise<
   const combat = combatPoint();
   const source: TriggerItem | null = fromUuidSync(state.sources[rule.id]);
   if (rule.limit !== "round" || !combat || !source) return;
-  const stored: Record<string, unknown> | undefined = source.getFlag(MODULE_ID, LIMITS_FLAG);
-  const limits = stored ?? {};
+  const limits = source.getFlag<Record<string, unknown>>(MODULE_ID, LIMITS_FLAG) ?? {};
   await source.setFlag(MODULE_ID, LIMITS_FLAG, { ...limits, [rule.id]: { combatId: combat.id, round: combat.round } });
 }
 
@@ -320,18 +310,11 @@ function dicePart(formula: string, data: Record<string, unknown>): string {
   return dice.replace(/^[+\-*/\s]+/, "").replace(/[+\-*/\s]+$/, "") || "0";
 }
 
-let grazeQueue: Promise<unknown> = Promise.resolve();
-
 /**
  * GM side of a graze. Card contents are client-authored, so only the target
  * choice is taken from them, and only for the attacker's own card; the GM rolls
  * the item's graze dice itself and grazes each card once.
  */
-function handleGraze(data: unknown, caller: QueryUser): Promise<unknown> {
-  const run = grazeQueue.then(() => graze(data, caller));
-  grazeQueue = run.catch(() => undefined);
-  return run;
-}
 
 async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | { ok: false; error: string }> {
   const payload = data && typeof data === "object" ? data : {};
@@ -353,8 +336,9 @@ async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | {
 
   const damage = item.system?.damage;
   const override = damage?.grazeOverrideFormula;
-  const formula = override && !override.includes("@damage") ? override : dicePart(damage?.formula ?? "0", item.actor ? attacker.getRollData() : {});
-  const roll = new foundry.dice.Roll(formula, attacker.getRollData());
+  const rollData = attacker.getRollData();
+  const formula = override && !override.includes("@damage") ? override : dicePart(damage?.formula ?? "0", rollData);
+  const roll = new foundry.dice.Roll(formula, rollData);
   await roll.evaluate();
   await message.setFlag(MODULE_ID, "grazed", targetUuid);
   try {
@@ -412,7 +396,7 @@ export function registerCosmereTriggers(deps: TriggerDeps): void {
     type: Boolean,
     default: true,
   });
-  registerQuery("trigger.graze", handleGraze, { access: "player" });
+  registerQuery("trigger.graze", serialize(graze), { access: "player" });
   registerTriggerOffers(makeHost(deps));
   Hooks.on(`${SYSTEM_ID}.useItem`, (item: TriggerItem | undefined) => void onUse(item, deps));
 }

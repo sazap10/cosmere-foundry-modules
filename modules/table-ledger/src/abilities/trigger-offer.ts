@@ -1,7 +1,6 @@
 // Offers for optional ability triggers: one chat card per use, plus a popup for
-// the user who used the action. The card's message flag holds all state, so a
-// dismissed popup loses nothing and both surfaces always agree. System-neutral:
-// the adapter supplies what "using" an offer does (`TriggerHost`).
+// the acting user. The card's message flag holds all state, so a dismissed popup
+// loses nothing. System-neutral: the adapter supplies what "using" an offer does.
 import { MODULE_ID, localize, template } from "../constants";
 import {
   describeCard,
@@ -118,7 +117,6 @@ async function save(message: TriggerMessage, state: TriggerCardState): Promise<v
   await message.update({ content: await cardHtml(state), [`flags.${MODULE_ID}.${FLAG}`]: state });
 }
 
-/** Clicks in flight, so a double click (or popup and card at once) can't run an offer twice. */
 const pending = new Set<string>();
 
 /** Use one offer from the popup or the card. Re-checks everything against the card's current state. */
@@ -192,7 +190,7 @@ class TriggerPopup extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _onRender(...args: unknown[]) {
     await (super._onRender as (...a: unknown[]) => Promise<void>)(...args);
-    // Nothing left to decide here: the card still holds whatever stays open.
+    // The card still holds whatever stays open.
     const state = stateOf(messageOf(this.#messageId));
     const view = state ? viewModel(state, this.#skipped) : null;
     if (!view || (!view.askOutcome && !view.offers.some((o) => o.open))) void this.close();
@@ -282,6 +280,8 @@ export function registerTriggerOffers(triggerHost: TriggerHost): void {
       void popups.get(message.id)?.render();
     }
   };
-  Hooks.on("updateCombat", redrawAll);
+  Hooks.on("updateCombat", (_combat: unknown, changes: Record<string, unknown>) => {
+    if ("round" in changes || "active" in changes || "started" in changes) redrawAll();
+  });
   Hooks.on("deleteCombat", redrawAll);
 }

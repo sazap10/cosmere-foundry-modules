@@ -1,11 +1,17 @@
-// Trigger tag editor on talent, action and power sheets: what the item
-// triggers on, what it offers, and its cost and limit. Writes an item flag
-// (`abilities/triggers.ts` reads it and replaces the item's built-in rules).
 import { MODULE_ID, localize, template } from "../../constants";
-import { NOTE_LIMIT, parseTag, type TriggerRule } from "../../abilities/triggers";
+import {
+  COSTS,
+  EFFECTS,
+  KINDS,
+  LIMITS,
+  NOTE_LIMIT,
+  OUTCOMES,
+  TAG_FLAG,
+  parseTag,
+  type TriggerRule,
+} from "../../abilities/triggers";
 import { BUILT_IN_RULES } from "./trigger-rules";
 
-const TAG_FLAG = "trigger";
 const SHEET_TYPES: Record<string, true> = { talent: true, action: true, power: true };
 
 interface SheetItem {
@@ -25,12 +31,6 @@ interface SheetApp {
   isEditable?: boolean;
   element?: HTMLElement;
 }
-
-const KINDS = ["weapon-attack", "melee-weapon-attack", "attack", "action", "heal-other"] as const;
-const OUTCOMES = ["any", "hit", "miss"] as const;
-const EFFECTS = ["follow-up", "graze", "focus-spend", "replacement-heal", "heal-bonus"] as const;
-const COSTS = ["normal", "waived", "waived-on-miss"] as const;
-const LIMITS = ["none", "round"] as const;
 
 const choices = (values: readonly string[], group: string, current: string) =>
   values.map((value) => ({ value, label: localize(`Triggers.Editor.${group}.${value}`), selected: value === current }));
@@ -112,17 +112,17 @@ async function mount(root: HTMLElement, item: SheetItem, editable: boolean, inva
   if (!host) return;
   const wrapper = document.createElement("div");
   wrapper.innerHTML = await editorHtml(item, editable, invalid);
-  const editor = wrapper.firstElementChild as HTMLElement | null;
+  const editor = wrapper.querySelector<HTMLElement>(".tl-trigger-editor");
   if (!editor) return;
   host.append(editor);
   editor.addEventListener("toggle", () => (editor.hasAttribute("open") ? open.add(item.uuid) : open.delete(item.uuid)));
   if (!editable) return;
-  // Re-draw the conditional fields when a choice changes, without saving a half-filled tag.
   editor.addEventListener("change", (event) => {
     event.stopPropagation();
-    const parsed = parseTag(readFields(editor, item));
+    const fields = readFields(editor, item);
+    const parsed = parseTag(fields);
     if (parsed.ok) {
-      void item.setFlag(MODULE_ID, TAG_FLAG, readFields(editor, item));
+      void item.setFlag(MODULE_ID, TAG_FLAG, fields);
     } else {
       void mount(root, item, editable, localize("Triggers.Editor.Invalid", { reason: parsed.reason }));
     }
