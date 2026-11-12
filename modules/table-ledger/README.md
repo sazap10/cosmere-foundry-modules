@@ -15,6 +15,7 @@ System support goes through adapters (`src/adapters/`):
 | Ability audit + chat hints (includes items whose charges no action spends, with a one-click fix) | ✔ | needs an adapter |
 | Charges/uses/ammo shown on actor-sheet item rows | ✔ | needs an adapter |
 | Optional ability triggers (popup + chat card after an action; once-per-round limits) | ✔ | needs an adapter |
+| Improvised Strike action (pick the Light or Heavy weapon it stands in for) | ✔ | needs an adapter |
 
 ## Ability triggers (Cosmere RPG)
 
@@ -29,6 +30,10 @@ Limits:
 - Plot-die talents (Opportunist, Sure Outcome) and reactions to other characters (Reactive Strike) are not covered.
 
 The world setting **Offer ability triggers** turns the feature off.
+
+## Improvised Strike (Cosmere RPG)
+
+Every character gets an **Improvised Strike** action. Using it asks which Light or Heavy melee weapon from the system's item compendium the improvised object stands in for, then makes that weapon's Strike with its damage and skill. The attack is a throwaway action; nothing about the choice is written to the character sheet, and other talents' triggers (including graze) work on it as on any Strike. The GM's client adds the action to existing characters on load and to new ones as they are created; the world setting **Improvised Strike action** turns it off.
 
 ## Install
 

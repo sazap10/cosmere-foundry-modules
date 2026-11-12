@@ -1,0 +1,18 @@
+{
+  "Improvised": {
+    "Name": "Improvised Strike",
+    "Title": "Improvised Strike",
+    "Choose": "Which weapon is the closest match for what you're swinging?",
+    "Light": "Light weapons",
+    "Heavy": "Heavy weapons",
+    "Strike": "Strike",
+    "NoWeapons": "No weapons were found in the system's item compendium.",
+    "StrikeName": "Improvised Strike: {weapon}",
+    "Description": "An improvised attack using the damage and skill of a {weapon}.",
+    "ActionDescription": "Attack with an object you can pick up, or use a weapon in an unconventional way. Choose the Light or Heavy weapon it most resembles and strike with that weapon's damage and skill.",
+    "Settings": {
+      "Name": "Improvised Strike action",
+      "Hint": "Give every character an Improvised Strike action that asks which weapon the improvised object stands in for, then makes that Strike without editing the sheet."
+    }
+  }
+}

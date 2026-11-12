@@ -10,6 +10,7 @@ import { registerHealPrompt, requestHealing } from "../../abilities/heal-prompt"
 import { ALLY_ACTION_IDS, healRequestFor, type HealTarget, type HealerActor } from "./healing";
 import { registerCosmereTriggers } from "./triggers";
 import { onRenderItemSheet } from "./trigger-sheet";
+import { ensureImprovisedActions, registerImprovisedStrike } from "./improvised";
 
 const SYSTEM_ID = "cosmere-rpg";
 const GUARDS_SETTING = "abilityGuards";
@@ -316,6 +317,7 @@ export const cosmereAbilities: AbilityAdapter = {
       pickedTarget: (item) => pickedTargets.get(item),
       pickFlight: (item) => pickFlights.get(item),
     });
+    registerImprovisedStrike();
     Hooks.on(`${SYSTEM_ID}.preUseItem`, onPreUseItem);
     Hooks.on(`${SYSTEM_ID}.useItem`, (item: CosmereItemDoc | undefined) => void onUseItem(item));
     Hooks.on(`${SYSTEM_ID}.chatMessageInteract`, onChatMessageInteract);
@@ -325,6 +327,7 @@ export const cosmereAbilities: AbilityAdapter = {
   },
 
   ready() {
+    void ensureImprovisedActions();
     if (game.settings.get(MODULE_ID, PROMPTED_SETTING)) return;
     void (async () => {
       await game.settings.set(MODULE_ID, PROMPTED_SETTING, true);
