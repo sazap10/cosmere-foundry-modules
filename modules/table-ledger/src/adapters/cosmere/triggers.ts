@@ -20,6 +20,19 @@ const SYSTEM_ID = "cosmere-rpg";
 const ENABLED_SETTING = "abilityTriggers";
 const LIMITS_FLAG = "limits";
 const SOURCE_FLAG = "triggered";
+const GRAZE_SOURCE_FLAG = "grazeSource";
+
+/** What the GM needs to roll a graze for an attack card, snapshotted when the attack is made (a temporary strike has no item to look up). */
+interface GrazeSource {
+  actorUuid: string;
+  formula: string | null;
+  override: string | null;
+  type: string | null;
+}
+
+function isGrazeSource(value: unknown): value is GrazeSource {
+  return !!value && typeof value === "object" && "actorUuid" in value && typeof value.actorUuid === "string";
+}
 
 interface TriggerItem {
   id?: string;
@@ -29,11 +42,14 @@ interface TriggerItem {
   actor?: TriggerActor | null;
   parent?: TriggerItem | TriggerActor | null;
   items?: Iterable<TriggerItem>;
+  actions?: Iterable<TriggerItem>;
+  isStrikeAction?: boolean;
   defaultAction?: TriggerItem | null;
   system?: {
     id?: string;
     description?: { value?: string | null };
     activation?: { type?: string | null };
+    equipped?: boolean;
     damage?: { formula?: string | null; type?: string | null; grazeOverrideFormula?: string | null };
     attack?: { type?: string };
   };
@@ -191,7 +207,14 @@ async function onUse(item: TriggerItem | undefined, deps: TriggerDeps): Promise<
     posted: combat && { combatId: combat.id, round: combat.round },
   };
   const messageId = await postTriggerCard(state, { speaker: card.speaker, whisper: card.whisper, blind: card.blind });
-  await card.setFlag(MODULE_ID, SOURCE_FLAG, true);
+  const damage = grazeDamageItem(item, actor).system?.damage;
+  const grazeSource: GrazeSource = {
+    actorUuid: actor.uuid,
+    formula: damage?.formula ?? null,
+    override: damage?.grazeOverrideFormula ?? null,
+    type: damage?.type ?? null,
+  };
+  await card.update({ [`flags.${MODULE_ID}.${SOURCE_FLAG}`]: true, [`flags.${MODULE_ID}.${GRAZE_SOURCE_FLAG}`]: grazeSource });
   if (messageId) openTriggerPopup(messageId);
 }
 
@@ -303,6 +326,17 @@ async function runGraze(state: TriggerCardState): Promise<boolean> {
   return false;
 }
 
+/** The item whose damage a graze rolls: the card's own, or for the basic Strike (which has none) the first equipped weapon's Strike. */
+function grazeDamageItem(item: TriggerItem, attacker: TriggerActor): TriggerItem {
+  if (item.system?.damage?.formula) return item;
+  for (const weapon of attacker.items) {
+    if (weapon.type !== "weapon" || !weapon.system?.equipped) continue;
+    const strike = [...(weapon.actions ?? [])].find((a) => a.isStrikeAction && a.system?.damage?.formula);
+    if (strike) return strike;
+  }
+  return item;
+}
+
 function dicePart(formula: string, data: Record<string, unknown>): string {
   const roll = new foundry.dice.Roll(formula, data);
   const kept = roll.terms.filter((t: unknown) => t instanceof foundry.dice.terms.DiceTerm || t instanceof foundry.dice.terms.OperatorTerm);
@@ -321,10 +355,9 @@ async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | {
   const targetUuid = "targetUuid" in payload ? payload.targetUuid : undefined;
   if (typeof sourceMessageId !== "string" || typeof targetUuid !== "string") return { ok: false, error: "unknown" };
   const message: CardMessage | undefined = game.messages.get(sourceMessageId);
-  const itemUuid = message?.flags?.[SYSTEM_ID]?.message?.item;
-  const item: TriggerItem | null = typeof itemUuid === "string" ? await fromUuid(itemUuid) : null;
-  const attacker = item?.actor;
-  if (!message || !item || !attacker) return { ok: false, error: "unknown" };
+  const source = message?.getFlag(MODULE_ID, GRAZE_SOURCE_FLAG);
+  const attacker: TriggerActor | null = isGrazeSource(source) ? await fromUuid(source.actorUuid) : null;
+  if (!message || !isGrazeSource(source) || !attacker) return { ok: false, error: "unknown" };
   if (message.author?.id !== caller.id || !attacker.testUserPermission(caller, "OWNER")) return { ok: false, error: "notOwner" };
   if (message.getFlag(MODULE_ID, "grazed")) return { ok: false, error: "alreadyGrazed" };
   const recorded = message.flags?.[SYSTEM_ID]?.message?.targets ?? [];
@@ -334,10 +367,9 @@ async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | {
   const onScene = target?.getDependentTokens().some((t) => attackerScenes.includes(t.parent));
   if (!target || !onScene) return { ok: false, error: "notOnScene" };
 
-  const damage = item.system?.damage;
-  const override = damage?.grazeOverrideFormula;
+  const override = source.override;
   const rollData = attacker.getRollData();
-  const formula = override && !override.includes("@damage") ? override : dicePart(damage?.formula ?? "0", rollData);
+  const formula = override && !override.includes("@damage") ? override : dicePart(source.formula ?? "0", rollData);
   const roll = new foundry.dice.Roll(formula, rollData);
   await roll.evaluate();
   await message.setFlag(MODULE_ID, "grazed", targetUuid);
@@ -346,7 +378,7 @@ async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | {
       speaker: ChatMessage.getSpeaker({ actor: attacker }),
       flavor: localize("Triggers.Graze.Flavor", { attacker: attacker.name, target: target.name }),
     });
-    await target.applyDamage([{ amount: roll.total as number, type: damage?.type ?? "impact" }]);
+    await target.applyDamage([{ amount: roll.total as number, type: source.type ?? "impact" }]);
   } catch (err) {
     await message.setFlag(MODULE_ID, "grazed", false);
     throw err;
