@@ -161,7 +161,8 @@ export function parseTag(raw: unknown): ParsedTag {
   }
   const optional = t.optional !== false;
   // The only mandatory effect is the heal bonus, which only applies to heals given to someone else.
-  if ((t.effect === "heal-bonus") !== !optional) return { ok: false, reason: "only the heal bonus is applied without asking, and it can't be offered" };
+  if (t.effect === "heal-bonus" && optional) return { ok: false, reason: "the heal bonus is always applied, so it can't be offered" };
+  if (t.effect !== "heal-bonus" && !optional) return { ok: false, reason: "only the heal bonus can be applied without asking" };
   if (t.effect === "heal-bonus" && trigger.kind !== "heal-other") return { ok: false, reason: "the heal bonus triggers on a heal given to another character" };
   if (trigger.kind === "heal-other" && t.effect !== "heal-bonus") return { ok: false, reason: "only the heal bonus can trigger on a heal given to another character" };
   const note = typeof t.note === "string" ? t.note.trim() : "";
