@@ -22,12 +22,17 @@ const LIMITS_FLAG = "limits";
 const SOURCE_FLAG = "triggered";
 const GRAZE_SOURCE_FLAG = "grazeSource";
 
-/** What the GM needs to roll a graze for an attack card, snapshotted when the attack is made (a temporary strike has no item to look up). */
+/** What the GM needs to roll a graze when the attack card has no damage roll of its own (the basic Strike), snapshotted when the attack is made. */
 interface GrazeSource {
   actorUuid: string;
   formula: string | null;
-  override: string | null;
   type: string | null;
+}
+
+/** A rolled graze: the system's (stored on the card's damage roll) or one the GM rolls. */
+interface GrazeRoll {
+  total: number;
+  toMessage(data: Record<string, unknown>): Promise<unknown>;
 }
 
 function isGrazeSource(value: unknown): value is GrazeSource {
@@ -50,7 +55,7 @@ interface TriggerItem {
     description?: { value?: string | null };
     activation?: { type?: string | null };
     equipped?: boolean;
-    damage?: { formula?: string | null; type?: string | null; grazeOverrideFormula?: string | null };
+    damage?: { formula?: string | null; type?: string | null };
     attack?: { type?: string };
   };
   getFlag<T = unknown>(scope: string, key: string): T | undefined;
@@ -77,7 +82,8 @@ interface CardMessage {
   whisper?: string[];
   blind?: boolean;
   speaker?: unknown;
-  rolls?: { total: number; dice?: { faces: number }[] }[];
+  /** `graze` is the system's graze roll, stored as plain roll data on the damage roll's options. */
+  rolls?: { total: number; dice?: { faces: number }[]; graze?: Record<string, unknown>; options?: { damageType?: string } }[];
   flags?: Record<string, { message?: { item?: unknown; targets?: { uuid: string; name: string; def?: Partial<Record<Defence, number>> }[] } } | undefined>;
   getFlag(scope: string, key: string): unknown;
   setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
@@ -162,6 +168,12 @@ function followUpAction(actor: TriggerActor, systemId: string): { item: TriggerI
   return null;
 }
 
+/** A replacement heal's formula: on the follow-up's action (a talent keeps it on its embedded action) or the item itself. */
+function replacementFormula(actor: TriggerActor, rule: TriggerRule): string | null {
+  const found = rule.followUp ? followUpAction(actor, rule.followUp) : null;
+  return found?.action?.system?.damage?.formula || found?.item.system?.damage?.formula || null;
+}
+
 function collectRules(actor: TriggerActor, use: UseDescription): Collected {
   const out: Collected = { rules: [], sources: {}, labels: {}, missing: [] };
   for (const item of actor.items) {
@@ -175,7 +187,7 @@ function collectRules(actor: TriggerActor, use: UseDescription): Collected {
         const found = followUpAction(actor, rule.followUp);
         out.labels[rule.id] = found?.item.name ?? rule.followUp;
         if (!found?.action) out.missing.push(rule.id);
-      } else if (rule.effect === "replacement-heal" && !item.system?.damage?.formula) {
+      } else if (rule.effect === "replacement-heal" && !replacementFormula(actor, rule)) {
         out.missing.push(rule.id);
       }
     }
@@ -215,7 +227,6 @@ async function onUse(item: TriggerItem | undefined, deps: TriggerDeps): Promise<
   const grazeSource: GrazeSource = {
     actorUuid: actor.uuid,
     formula: damage?.formula ?? null,
-    override: damage?.grazeOverrideFormula ?? null,
     type: damage?.type ?? null,
   };
   await card.update({ [`flags.${MODULE_ID}.${SOURCE_FLAG}`]: true, [`flags.${MODULE_ID}.${GRAZE_SOURCE_FLAG}`]: grazeSource });
@@ -276,8 +287,7 @@ async function runFocusSpend(state: TriggerCardState, offer: OfferView): Promise
 
 async function runReplacementHeal(state: TriggerCardState, offer: OfferView): Promise<boolean> {
   const actor: TriggerActor | null = fromUuidSync(state.actorUuid);
-  const source: TriggerItem | null = fromUuidSync(state.sources[offer.rule.id]);
-  const formula = source?.system?.damage?.formula;
+  const formula = actor && replacementFormula(actor, offer.rule);
   if (!actor || !formula) return false;
   const roll = new foundry.dice.Roll(formula, actor.getRollData());
   await roll.evaluate();
@@ -350,8 +360,10 @@ function dicePart(formula: string, data: Record<string, unknown>): string {
 
 /**
  * GM side of a graze. Card contents are client-authored, so only the target
- * choice is taken from them, and only for the attacker's own card; the GM rolls
- * the item's graze dice itself and grazes each card once.
+ * choice is taken from them, and only for the attacker's own card. The graze is
+ * the one the system rolled with the attack (it honours the item's graze
+ * override); a card without a damage roll gets the snapshotted weapon's dice.
+ * Each card grazes once.
  */
 async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | { ok: false; error: string }> {
   const payload = data && typeof data === "object" ? data : {};
@@ -371,20 +383,23 @@ async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | {
   const onScene = target?.getDependentTokens().some((t) => attackerScenes.includes(t.parent));
   if (!target || !onScene) return { ok: false, error: "notOnScene" };
 
-  const override = source.override;
-  const rollData = attacker.getRollData();
-  const base = dicePart(source.formula ?? "0", rollData);
-  // The system substitutes the base damage for @damage in a graze override.
-  const formula = override ? override.replaceAll("@damage", `(${base})`) : base;
-  const roll = new foundry.dice.Roll(formula, rollData);
-  await roll.evaluate();
+  const systemRoll = message.rolls?.find((r) => r.graze);
+  let roll: GrazeRoll;
+  if (systemRoll?.graze) {
+    roll = foundry.dice.Roll.fromData(systemRoll.graze);
+  } else {
+    const rollData = attacker.getRollData();
+    const rolled = new foundry.dice.Roll(dicePart(source.formula ?? "0", rollData), rollData);
+    await rolled.evaluate();
+    roll = rolled;
+  }
   await message.setFlag(MODULE_ID, "grazed", targetUuid);
   try {
     await roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor: attacker }),
       flavor: localize("Triggers.Graze.Flavor", { attacker: attacker.name, target: target.name }),
     });
-    await target.applyDamage([{ amount: roll.total as number, type: source.type ?? "impact" }]);
+    await target.applyDamage([{ amount: roll.total, type: systemRoll?.options?.damageType ?? source.type ?? "impact" }]);
   } catch (err) {
     await message.setFlag(MODULE_ID, "grazed", false);
     throw err;
