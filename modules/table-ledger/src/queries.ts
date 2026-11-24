@@ -115,3 +115,13 @@ export async function askGM<T = unknown>(name: string, data: unknown): Promise<T
   game.socket.emit(EVENT, { type: "request", id, name, data } satisfies RequestMessage, { recipients: [gm.id] });
   return promise;
 }
+
+/** Wrap an async handler so calls run one at a time: two requests can't both pass a check before the first records its result. */
+export function serialize<A extends unknown[], R>(fn: (...args: A) => Promise<R>): (...args: A) => Promise<R> {
+  let queue: Promise<unknown> = Promise.resolve();
+  return (...args) => {
+    const run = queue.then(() => fn(...args));
+    queue = run.catch(() => undefined);
+    return run;
+  };
+}

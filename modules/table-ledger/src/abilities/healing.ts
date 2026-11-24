@@ -35,3 +35,8 @@ export function regrowthFormula(progressionRanks: number, progressionModifier: n
   const size = Math.min(12, 2 + 2 * Math.max(1, progressionRanks));
   return progressionModifier ? `1d${size} + ${progressionModifier}` : `1d${size}`;
 }
+
+/** A heal given to another character gains a flat bonus (Swift Healer: the healer's Medicine ranks). */
+export function withHealBonus(formula: string, bonus: number): string {
+  return bonus > 0 ? `${formula} + ${bonus}` : formula;
+}

@@ -1,0 +1,24 @@
+<div class="tl-abilities-trigger">
+  <h3><i class="fa-solid fa-bolt"></i> {{heading}}</h3>
+  {{#if askOutcome}}
+  <p>{{localize "TABLE_LEDGER.Triggers.AskOutcome"}}</p>
+  <div class="tl-abilities-trigger-ask">
+    <button type="button" data-action="tl-trigger-answer" data-outcome="hit">{{localize "TABLE_LEDGER.Triggers.Hit"}}</button>
+    <button type="button" data-action="tl-trigger-answer" data-outcome="miss">{{localize "TABLE_LEDGER.Triggers.Miss"}}</button>
+  </div>
+  {{/if}}
+  <ul class="tl-abilities-trigger-offers">
+    {{#each offers}}
+    <li class="tl-abilities-trigger-offer {{status}}" data-rule-id="{{id}}">
+      <strong>{{name}}</strong>
+      <span>{{summary}}</span>
+      {{#if note}}<em class="tl-abilities-trigger-note">{{note}}</em>{{/if}}
+      {{#if open}}
+      <button type="button" data-action="tl-trigger-use" data-rule-id="{{id}}"><i class="fa-solid fa-bolt"></i> {{localize "TABLE_LEDGER.Triggers.Use"}}</button>
+      {{else}}
+      <span class="tl-abilities-trigger-status">{{statusLabel}}</span>
+      {{/if}}
+    </li>
+    {{/each}}
+  </ul>
+</div>

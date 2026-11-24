@@ -98,3 +98,26 @@
 .tl-abilities-heal h3 { margin: 0 0 4px; font-size: 1.05em; }
 .tl-abilities-heal-note { margin: 0 0 4px; font-size: 0.9em; opacity: 0.85; }
 .tl-abilities-heal-result { margin: 0 0 4px; color: var(--tl-success); font-weight: bold; }
+
+/* Trigger offers (chat card and popup) */
+.tl-abilities-trigger h3 { margin: 0 0 4px; font-size: 1.05em; }
+.tl-abilities-trigger-offers { list-style: none; margin: 0 0 4px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.tl-abilities-trigger-offer { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 2px 4px; border-left: 3px solid var(--tl-accent); }
+.tl-abilities-trigger-offer.taken { border-left-color: var(--tl-success); opacity: 0.75; }
+.tl-abilities-trigger-offer.expired,
+.tl-abilities-trigger-offer.spent,
+.tl-abilities-trigger-offer.unavailable { border-left-color: var(--tl-failure); opacity: 0.7; }
+.tl-abilities-trigger-offer button,
+.tl-abilities-trigger-ask button { flex: 0 0 auto; width: auto; }
+.tl-abilities-trigger-note { flex: 1 0 100%; font-size: 0.9em; opacity: 0.85; }
+.tl-abilities-trigger-status { font-style: italic; opacity: 0.85; }
+.tl-abilities-trigger-ask { display: flex; gap: 4px; margin-bottom: 4px; }
+
+/* Trigger tag editor on item sheets */
+.tl-trigger-editor { margin-top: 8px; padding: 4px 6px; border: 1px solid var(--tl-accent); border-radius: 4px; }
+.tl-trigger-editor summary { cursor: pointer; font-weight: bold; }
+.tl-trigger-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; margin-top: 4px; }
+.tl-trigger-fields label { display: flex; flex-direction: column; gap: 2px; font-size: 0.9em; }
+.tl-trigger-fields .tl-trigger-check { flex-direction: row; align-items: center; grid-column: 1 / -1; }
+.tl-trigger-fields button { grid-column: 1 / -1; width: auto; justify-self: start; }
+.tl-trigger-invalid { color: var(--tl-failure); }

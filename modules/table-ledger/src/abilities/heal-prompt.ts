@@ -4,7 +4,7 @@
 // pop-up is sent to the target's online owners. System-neutral: the adapter
 // supplies how healing is applied.
 import { MODULE_ID, localize, template } from "../constants";
-import { askGM, registerClientQuery, registerQuery, type QueryUser } from "../queries";
+import { askGM, registerClientQuery, registerQuery, serialize, type QueryUser } from "../queries";
 
 export interface HealRequest {
   targetUuid: string;
@@ -101,19 +101,11 @@ export async function rollHealing(messageId: string): Promise<void> {
   else if (response.error === "alreadyRolled") ui.notifications.info(localize("Abilities.Heal.AlreadyRolled"));
 }
 
-let healQueue: Promise<unknown> = Promise.resolve();
-
 /**
- * GM side of a heal. The GM rolls, so a client can't choose its total, and the
- * request is recorded before healing is applied. Handlers are chained so two
- * owners clicking at once can't both pass the non-repeatable check.
+ * GM side of a heal (serialised: two owners clicking at once can't both pass
+ * the non-repeatable check). The GM rolls, so a client can't choose its total,
+ * and the request is recorded before healing is applied.
  */
-function handleHealRoll(data: unknown, user: QueryUser): Promise<HealResponse> {
-  const run = healQueue.then(() => healRoll(data, user));
-  healQueue = run.catch(() => undefined);
-  return run;
-}
-
 async function healRoll(data: unknown, user: QueryUser): Promise<HealResponse> {
   const messageId = typeof data === "object" && data && "messageId" in data ? data.messageId : null;
   const message = typeof messageId === "string" ? game.messages.get(messageId) : undefined;
@@ -151,7 +143,7 @@ export function registerHealPrompt(apply: ApplyHealing): void {
     return { ok: true };
   });
   // Players can't edit a card or heal an actor they don't control, so the GM does both.
-  registerQuery("heal.roll", handleHealRoll, { access: "player" });
+  registerQuery("heal.roll", serialize(healRoll), { access: "player" });
   Hooks.on("renderChatMessageHTML", (message: { id: string; getFlag(scope: string, key: string): unknown }, html: HTMLElement) => {
     const request = requestOf(message);
     const button = html.querySelector<HTMLButtonElement>("[data-action='tl-heal-roll']");

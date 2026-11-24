@@ -8,6 +8,9 @@ import { shouldPickTarget, targetSide } from "../../abilities/targeting";
 import { pickTarget } from "../../abilities/target-picker";
 import { registerHealPrompt, requestHealing } from "../../abilities/heal-prompt";
 import { ALLY_ACTION_IDS, healRequestFor, type HealTarget, type HealerActor } from "./healing";
+import { registerCosmereTriggers } from "./triggers";
+import { onRenderItemSheet } from "./trigger-sheet";
+import { ensureImprovisedActions, registerImprovisedStrike } from "./improvised";
 
 const SYSTEM_ID = "cosmere-rpg";
 const GUARDS_SETTING = "abilityGuards";
@@ -44,14 +47,16 @@ interface CosmereMessage {
 /** Items whose use was confirmed through the picker and is being re-run. */
 const inFlight = new WeakSet<CosmereItemDoc>();
 /** Target chosen in the picker, for the heal prompt (off-scene party members have no token to target). */
-const pickedTargets = new WeakMap<CosmereItemDoc, string>();
+const pickedTargets = new WeakMap<object, string>();
+/** Target-picker flows in progress (a veto and its later re-run), for callers that need to wait for the real use. */
+const pickFlights = new WeakMap<object, Promise<void>>();
 
 const FIX_UPDATES: Record<Exclude<AbilityFix, "consumeCharge">, Record<string, unknown>> = {
   clearDamage: { "system.damage.formula": null },
   setUtility: { "system.activation.type": "utility" },
 };
 
-function normalise(doc: CosmereItemDoc) {
+function normalise(doc: Pick<CosmereItemDoc, "name" | "system">) {
   return {
     ...normaliseAction({
       name: doc.name,
@@ -69,7 +74,7 @@ function guardsEnabled(): boolean {
 }
 
 /** Weapon strikes are rebuilt from the weapon on every prepare; they can't be edited. */
-function isStrike(doc: CosmereItemDoc): boolean {
+function isStrike(doc: Pick<CosmereItemDoc, "getFlag">): boolean {
   return !!doc.getFlag?.(SYSTEM_ID, "isStrike");
 }
 
@@ -92,7 +97,7 @@ function onPreUseItem(item: CosmereItemDoc | undefined, options: Record<string, 
   });
   if (!pick || !side) return;
   // Veto before the system's consume dialog, so nothing is spent until a target is chosen.
-  void pickThenUse(item, side, options);
+  pickFlights.set(item, pickThenUse(item, side, options));
   return false;
 }
 
@@ -305,14 +310,24 @@ export const cosmereAbilities: AbilityAdapter = {
       }
       return actor.applyHealing(amount);
     });
+    // Registered before the heal hook below: it reads the picked target, which the heal hook clears.
+    registerCosmereTriggers({
+      isStrike,
+      normalise,
+      pickedTarget: (item) => pickedTargets.get(item),
+      pickFlight: (item) => pickFlights.get(item),
+    });
+    registerImprovisedStrike();
     Hooks.on(`${SYSTEM_ID}.preUseItem`, onPreUseItem);
     Hooks.on(`${SYSTEM_ID}.useItem`, (item: CosmereItemDoc | undefined) => void onUseItem(item));
     Hooks.on(`${SYSTEM_ID}.chatMessageInteract`, onChatMessageInteract);
     Hooks.on("renderChatMessageHTML", onRenderChatMessage);
     Hooks.on("renderApplicationV2", onRenderSheet);
+    Hooks.on("renderApplicationV2", onRenderItemSheet);
   },
 
   ready() {
+    void ensureImprovisedActions();
     if (game.settings.get(MODULE_ID, PROMPTED_SETTING)) return;
     void (async () => {
       await game.settings.set(MODULE_ID, PROMPTED_SETTING, true);

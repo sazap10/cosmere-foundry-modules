@@ -7,9 +7,11 @@
 // - Progression (`prg`), Character Regrowth: the target recovers 1d4 +
 //   Progression modifier at the start of each of their turns while infused
 //   (die grows with ranks), so the request can be rolled again each turn.
-import { localize } from "../../constants";
+import { MODULE_ID, localize } from "../../constants";
 import type { HealRequest } from "../../abilities/heal-prompt";
-import { fieldMedicineFormula, normaliseDie, parseDC, regrowthFormula, testSucceeded } from "../../abilities/healing";
+import { fieldMedicineFormula, normaliseDie, parseDC, regrowthFormula, testSucceeded, withHealBonus } from "../../abilities/healing";
+import { matchTriggers, type UseDescription } from "../../abilities/triggers";
+import { rulesOfItem } from "./trigger-rules";
 
 /** Ally-targeted actions without a heal formula; the picker still asks for a target. */
 export const ALLY_ACTION_IDS = ["field-medicine", "prg", "injury-regrowth"] as const;
@@ -20,8 +22,10 @@ interface Skill {
 }
 
 export interface HealerActor {
+  uuid?: string;
   name: string;
   system?: { skills?: Record<string, Skill | undefined> };
+  items?: Iterable<{ system?: { id?: string }; getFlag?(scope: string, key: string): unknown }>;
 }
 
 export interface HealTarget {
@@ -40,6 +44,32 @@ export type TestTotal = number | null;
 
 /** The heal request for this use, or null when the action isn't a target-rolled heal. */
 export function healRequestFor(
+  action: HealAction,
+  healer: HealerActor,
+  target: HealTarget,
+  testTotal: TestTotal,
+): Omit<HealRequest, "rolls"> | null {
+  const request = baseRequest(action, healer, target, testTotal);
+  if (!request) return null;
+  const bonus = healBonus(healer, target);
+  if (!bonus) return request;
+  return {
+    ...request,
+    formula: withHealBonus(request.formula, bonus),
+    note: [request.note, localize("Abilities.Heal.SwiftHealerNote", { ranks: bonus })].filter(Boolean).join(" "),
+  };
+}
+
+function healBonus(healer: HealerActor, target: HealTarget): number {
+  if (game.settings.get(MODULE_ID, "abilityTriggers") !== true) return 0;
+  if (healer.uuid && healer.uuid === target.uuid) return 0;
+  const rules = (healer.items ? [...healer.items] : []).flatMap((item) => rulesOfItem(item).rules);
+  const heal: UseDescription = { weapon: false, melee: false, attack: false, healsOther: true, d20: null, targets: [] };
+  const hasRider = matchTriggers(heal, rules).riders.some((rule) => rule.effect === "heal-bonus");
+  return hasRider ? Number(healer.system?.skills?.med?.rank ?? 0) : 0;
+}
+
+function baseRequest(
   action: HealAction,
   healer: HealerActor,
   target: HealTarget,

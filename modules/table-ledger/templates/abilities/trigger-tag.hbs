@@ -1,0 +1,47 @@
+<details class="tl-trigger-editor" {{#if open}}open{{/if}}>
+  <summary><i class="fa-solid fa-bolt"></i> {{localize "TABLE_LEDGER.Triggers.Editor.Title"}}</summary>
+  <p class="hint">{{localize "TABLE_LEDGER.Triggers.Editor.Hint"}}</p>
+  {{#if builtIn}}<p class="hint">{{localize "TABLE_LEDGER.Triggers.Editor.BuiltIn"}} {{builtIn}}</p>{{/if}}
+  {{#if invalid}}<p class="tl-trigger-invalid">{{invalid}}</p>{{/if}}
+  {{#if editable}}
+  <div class="tl-trigger-fields">
+    <label>{{localize "TABLE_LEDGER.Triggers.Editor.Trigger"}}
+      <select data-field="kind">{{#each kinds}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+    {{#if showAction}}
+    <label>{{localize "TABLE_LEDGER.Triggers.Editor.ActionId"}}
+      <input type="text" data-field="actionId" value="{{actionId}}" maxlength="80">
+    </label>
+    {{/if}}
+    <label>{{localize "TABLE_LEDGER.Triggers.Editor.OutcomeLabel"}}
+      <select data-field="outcome">{{#each outcomes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+    <label>{{localize "TABLE_LEDGER.Triggers.Editor.EffectLabel"}}
+      <select data-field="effect">{{#each effects}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+    {{#if showFollowUp}}
+    <label>{{localize "TABLE_LEDGER.Triggers.Editor.FollowUp"}}
+      <select data-field="followUp"><option value=""></option>{{#each followUps}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+    {{/if}}
+    {{#if showAmount}}
+    <label>{{localize "TABLE_LEDGER.Triggers.Editor.Amount"}}
+      <input type="number" data-field="amount" value="{{amount}}" min="0" max="20" step="1">
+    </label>
+    {{/if}}
+    <label>{{localize "TABLE_LEDGER.Triggers.Editor.CostLabel"}}
+      <select data-field="cost">{{#each costs}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+    <label>{{localize "TABLE_LEDGER.Triggers.Editor.LimitLabel"}}
+      <select data-field="limit">{{#each limits}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+    </label>
+    <label class="tl-trigger-check">
+      <input type="checkbox" data-field="optional" {{#if optional}}checked{{/if}}> {{localize "TABLE_LEDGER.Triggers.Editor.Optional"}}
+    </label>
+    <label>{{localize "TABLE_LEDGER.Triggers.Editor.Note"}}
+      <input type="text" data-field="note" value="{{note}}" maxlength="{{noteLimit}}">
+    </label>
+    {{#if hasTag}}<button type="button" data-action="tl-trigger-clear"><i class="fa-solid fa-trash"></i> {{localize "TABLE_LEDGER.Triggers.Editor.Clear"}}</button>{{/if}}
+  </div>
+  {{/if}}
+</details>

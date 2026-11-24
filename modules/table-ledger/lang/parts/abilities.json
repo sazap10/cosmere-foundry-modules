@@ -80,7 +80,8 @@
       "TestSuccess": "Medicine test {total} vs DC {dc}: success. Recovery die + Medicine ranks.",
       "TestFailure": "Medicine test {total} vs DC {dc}: failure. Recovery die only.",
       "UnknownOutcome": "Test result not found: rolling the recovery die only. Add {ranks} if the DC {dc} test succeeded.",
-      "RegrowthNote": "Regrowth: recover this at the start of each of your turns while infused."
+      "RegrowthNote": "Regrowth: recover this at the start of each of your turns while infused.",
+      "SwiftHealerNote": "Swift Healer: +{ranks} health."
     }
   }
 }

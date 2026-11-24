@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fieldMedicineFormula, normaliseDie, parseDC, regrowthFormula, testSucceeded } from "../../src/abilities/healing";
+import { fieldMedicineFormula, normaliseDie, parseDC, regrowthFormula, testSucceeded, withHealBonus } from "../../src/abilities/healing";
 
 describe("Field Medicine", () => {
   it("adds Medicine ranks only on a success", () => {
@@ -31,5 +31,20 @@ describe("Progression (Regrowth)", () => {
     expect(regrowthFormula(3, 5)).toBe("1d8 + 5");
     expect(regrowthFormula(9, 5)).toBe("1d12 + 5");
     expect(regrowthFormula(0, 0)).toBe("1d4");
+  });
+});
+
+describe("heal bonus", () => {
+  it("stacks Swift Healer's Medicine ranks on Field Medicine's own success bonus", () => {
+    expect(withHealBonus(fieldMedicineFormula("1d8", 3, true), 3)).toBe("1d8 + 3 + 3");
+  });
+
+  it("adds the bonus to a failed Field Medicine's bare recovery die", () => {
+    expect(withHealBonus(fieldMedicineFormula("1d8", 3, false), 3)).toBe("1d8 + 3");
+  });
+
+  it("adds it to a Regrowth heal and leaves a zero bonus alone", () => {
+    expect(withHealBonus(regrowthFormula(2, 3), 2)).toBe("1d6 + 3 + 2");
+    expect(withHealBonus("1d8", 0)).toBe("1d8");
   });
 });
