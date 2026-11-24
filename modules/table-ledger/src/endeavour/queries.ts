@@ -8,7 +8,7 @@ export type DeclareResponse = { ok: true } | { ok: false; error: ErrorCode | "no
 
 export type StartResponse =
   | { ok: true; id: string; name: string; successesNeeded: number; failuresAllowed: number; successes: number; failures: number }
-  | { ok: false; error: ErrorCode | "alreadyActive"; current?: string };
+  | { ok: false; error: ErrorCode; current?: string };
 
 /**
  * `table-ledger.endeavour.declare` (player → active GM). The declaring user is
@@ -43,11 +43,11 @@ export function registerQueries() {
     async (data): Promise<StartResponse> => {
       const parsed = parseNewEndeavour(data);
       if (!parsed.ok) return parsed;
-      const current = getStore().current;
       const replace = typeof data === "object" && data !== null && "replace" in data && data.replace === true;
-      if (current?.status === "active" && !replace) return { ok: false, error: "alreadyActive", current: current.name };
-      const result = await startEndeavour(parsed.value);
-      if (!result.ok) return result;
+      const result = await startEndeavour(parsed.value, { replace });
+      if (!result.ok) {
+        return result.error === "alreadyActive" ? { ...result, current: getStore().current?.name } : result;
+      }
       const e = result.value;
       return { ok: true, id: e.id, name: e.name, successesNeeded: e.successesNeeded, failuresAllowed: e.failuresAllowed, ...counts(e) };
     },
