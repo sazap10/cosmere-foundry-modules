@@ -1,45 +1,89 @@
 name: Release
 
-# Push a tag "<module>-v<version>" (e.g. table-ledger-v0.2.0) to release one
-# module. modules/<module>/module.json on main is the Foundry manifest, so bump
-# its "version" and "download" in a PR first; this job refuses a mismatch.
+# release-please keeps a release PR open from Conventional Commits on main.
+# It bumps each module's package.json, module.json "version" and CHANGELOG.md;
+# the sync job below also points module.json "download" at the new release and
+# refreshes the lockfile. Merging the PR tags <module>-v<version> and creates
+# the GitHub release; the publish job then builds the module and attaches
+# module.json and <module>.zip to it.
 on:
   push:
-    tags: ["*-v*"]
+    branches: [main]
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  release:
+  release-please:
     runs-on: ubuntu-latest
+    outputs:
+      paths_released: ${{ steps.release.outputs.paths_released }}
+      pr: ${{ steps.release.outputs.pr }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v4
+
+  # Foundry reads module.json on main as the manifest, so its download URL must
+  # name the version the release PR is about to publish.
+  sync-release-pr:
+    needs: release-please
+    if: needs.release-please.outputs.pr
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ fromJSON(needs.release-please.outputs.pr).headBranchName }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Point download URLs at the release versions
+        run: |
+          for manifest in modules/*/module.json; do
+            id=$(jq -r .id "$manifest")
+            version=$(jq -r .version "$manifest")
+            url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${id}-v${version}/${id}.zip"
+            jq --arg url "$url" '.download = $url' "$manifest" > "$manifest.tmp" && mv "$manifest.tmp" "$manifest"
+          done
+          npm install --package-lock-only --ignore-scripts
+      - name: Commit
+        run: |
+          git diff --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: point module downloads at the release versions"
+          git push
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.paths_released != '[]' && needs.release-please.outputs.paths_released != ''
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path: ${{ fromJSON(needs.release-please.outputs.paths_released) }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
-      - name: Resolve module from tag
-        id: tag
+      - name: Resolve module
+        id: mod
         run: |
-          tag="$GITHUB_REF_NAME"
-          module="${tag%-v*}"
-          version="${tag##*-v}"
-          dir="modules/$module"
-          test -f "$dir/module.json" || { echo "::error::no module at $dir"; exit 1; }
-          want_dl="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/${module}.zip"
-          jq -e --arg v "$version" --arg dl "$want_dl" '.version == $v and .download == $dl' "$dir/module.json" >/dev/null \
-            || { echo "::error::$dir/module.json must have version $version and download $want_dl"; exit 1; }
-          echo "module=$module" >> "$GITHUB_OUTPUT"
-          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          id=$(jq -r .id "${{ matrix.path }}/module.json")
+          version=$(jq -r .version "${{ matrix.path }}/module.json")
+          tag="${id}-v${version}"
+          want="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/${id}.zip"
+          jq -e --arg dl "$want" '.download == $dl' "${{ matrix.path }}/module.json" >/dev/null \
+            || { echo "::error::${{ matrix.path }}/module.json download must be $want"; exit 1; }
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - run: npm ci
-      - run: npm run typecheck -w ${{ steps.tag.outputs.dir }}
-      - run: npm test -w ${{ steps.tag.outputs.dir }}
-      - run: npm run zip -w ${{ steps.tag.outputs.dir }}
-      - name: Publish release
-        working-directory: ${{ steps.tag.outputs.dir }}
-        run: |
-          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes \
-            build/module.json "build/${{ steps.tag.outputs.module }}.zip"
+      - run: npm run typecheck -w ${{ matrix.path }}
+      - run: npm test -w ${{ matrix.path }}
+      - run: npm run zip -w ${{ matrix.path }}
+      - name: Attach build to the release
+        working-directory: ${{ matrix.path }}
+        run: gh release upload "${{ steps.mod.outputs.tag }}" build/module.json "build/${{ steps.mod.outputs.id }}.zip" --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
