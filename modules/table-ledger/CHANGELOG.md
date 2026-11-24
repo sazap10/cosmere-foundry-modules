@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/sazap10/cosmere-foundry-modules/compare/table-ledger-v0.1.0...table-ledger-v0.2.0) (2026-11-24)
+
+
+### Features
+
+* **table-ledger:** let the foundry-mcp bridge call setCalendar and postRecap ([e4cb95c](https://github.com/sazap10/cosmere-foundry-modules/commit/e4cb95c1351640229f1d6ae00797ad53d6f0c415))
+* **table-ledger:** let the foundry-mcp bridge call setCalendar and postRecap ([a30244b](https://github.com/sazap10/cosmere-foundry-modules/commit/a30244b8b9146fc385dd99a2718ac2a3243d0af4))
+
 ## 0.1.0 (2026-11-24)
 
 
