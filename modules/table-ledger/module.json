@@ -50,7 +50,7 @@
   },
   "socket": true,
   "manifest": "https://raw.githubusercontent.com/sazap10/cosmere-foundry-modules/main/modules/table-ledger/module.json",
-  "download": "https://github.com/sazap10/cosmere-foundry-modules/releases/download/table-ledger-v0.1.0/table-ledger.zip",
+  "download": "https://github.com/sazap10/cosmere-foundry-modules/releases/download/table-ledger-v0.2.0/table-ledger.zip",
   "flags": {
     "hotReload": {
       "extensions": [
