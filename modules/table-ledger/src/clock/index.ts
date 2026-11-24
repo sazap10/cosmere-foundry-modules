@@ -80,7 +80,7 @@ export function init() {
     if (!result.ok) throw new Error(`${MODULE_ID}.setCalendar: ${result.error}`);
     await game.settings.set(MODULE_ID, SETTING_CALENDAR, result.value);
     return { ok: true, simpleCalendar: syncSimpleCalendar(result.value.current) };
-  });
+  }, { external: true });
 
   registerTool({
     name: "clock",

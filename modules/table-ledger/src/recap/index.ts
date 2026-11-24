@@ -137,7 +137,7 @@ export function init() {
     const result = validateRecap(data);
     if (!result.ok) throw new Error(`${MODULE_ID}.postRecap: ${result.error}`);
     return postRecap(result.value);
-  });
+  }, { external: true });
 
   registerTool({
     name: "recap",
