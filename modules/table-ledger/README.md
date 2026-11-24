@@ -17,7 +17,7 @@ System support goes through adapters (`src/adapters/`):
 
 ## Install
 
-Manifest URL: `https://raw.githubusercontent.com/sazap10/foundry-modules/main/modules/table-ledger/module.json`
+Manifest URL: `https://raw.githubusercontent.com/sazap10/cosmere-foundry-modules/main/modules/table-ledger/module.json`
 
 ## Develop
 

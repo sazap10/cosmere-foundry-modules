@@ -1,5 +1,5 @@
 {
-  "name": "foundry-modules",
+  "name": "cosmere-foundry-modules",
   "private": true,
   "type": "module",
   "workspaces": [
