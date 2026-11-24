@@ -50,9 +50,11 @@ npm run build -w modules/table-ledger       # → modules/table-ledger/build/tab
 
 ## Planner integration
 
-The cosmere-rpg-planner pushes calendar snapshots and recaps through the foundry-mcp `call-module-query` tool, which calls this module's GM-only queries:
+The cosmere-rpg-planner pushes calendar snapshots and session recaps into the world through the foundry-vtt-mcp `call-module-query` tool. That tool goes through the foundry-mcp bridge running in the GM's browser, which calls these core queries (`CONFIG.queries`) there:
 
-- `table-ledger.setCalendar` — calendar snapshot (see `src/clock/snapshot.ts`); also sets Simple Calendar's date when that module is active, and reports `simpleCalendar: "synced" | "absent" | "skipped: …"`
-- `table-ledger.postRecap` — `{ session, date?, title, html }` → "Session Recaps" journal page + chat card
+- `table-ledger.setCalendar`: a calendar snapshot (shape in `src/clock/snapshot.ts`). Also sets Simple Calendar's date when that module is active, and reports `simpleCalendar: "synced" | "absent" | "skipped: …"`.
+- `table-ledger.postRecap`: `{ session, date?, title, html }`. Creates or replaces that session's page in the "Session Recaps" journal and posts a chat card linking to it.
 
-Both also have manual GM forms in the Table Ledger scene controls.
+Both run only on the active GM's client, so a GM must be logged in. Foundry's core queries don't say who sent them, so any connected user could also send one; that is acceptable for a trusted table and is why only these two writes are exposed this way.
+
+Both also have manual GM forms in the Table Ledger scene controls: **Edit** on the world clock, and the recap tool.

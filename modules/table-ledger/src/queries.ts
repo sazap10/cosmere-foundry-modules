@@ -82,10 +82,27 @@ function onResponse({ id, ok, value, error }: ResponseMessage, senderId: string)
   else waiter.reject(new Error(error));
 }
 
-/** Register a GM-side query. Names are prefixed with the module id in errors only. */
-export function registerQuery(name: string, handler: QueryHandler, { access = "gm" }: { access?: QueryAccess } = {}) {
+/**
+ * Register a GM-side query. Names are prefixed with the module id in errors only.
+ *
+ * `external` also registers it as a core query (`CONFIG.queries["table-ledger.<name>"]`)
+ * so tools running in the GM's browser, such as the foundry-mcp bridge, can call
+ * it. It runs only on the active GM, as the GM. Core queries don't identify the
+ * sender on v13, so any connected user could send one too: use it only for
+ * handlers a trusted table can live with anyone triggering.
+ */
+export function registerQuery(
+  name: string,
+  handler: QueryHandler,
+  { access = "gm", external = false }: { access?: QueryAccess; external?: boolean } = {},
+) {
   handlers.set(name, { handler, access });
   listen();
+  if (!external) return;
+  CONFIG.queries[`${MODULE_ID}.${name}`] = async (data: unknown) => {
+    if (!game.user.isActiveGM) throw new Error(`${MODULE_ID}.${name}: only the active GM runs this`);
+    return run(name, data, game.user);
+  };
 }
 
 /**
