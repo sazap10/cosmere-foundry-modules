@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/sazap10/cosmere-foundry-modules/compare/table-ledger-v0.2.0...table-ledger-v0.3.0) (2026-11-24)
+
+
+### Features
+
+* **table-ledger:** let the foundry-mcp bridge start an endeavour ([#5](https://github.com/sazap10/cosmere-foundry-modules/issues/5)) ([d8df6a4](https://github.com/sazap10/cosmere-foundry-modules/commit/d8df6a4573cb1e613d67266018776ef62fc8b2c6))
+
 ## [0.2.0](https://github.com/sazap10/cosmere-foundry-modules/compare/table-ledger-v0.1.0...table-ledger-v0.2.0) (2026-11-24)
 
 
