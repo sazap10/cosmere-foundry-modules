@@ -95,7 +95,8 @@ export type ErrorCode =
   | "notActiveGM"
   | "alreadyContributed"
   | "noContribution"
-  | "emptyNote";
+  | "emptyNote"
+  | "alreadyActive";
 
 export type Result<T = Endeavour> = { ok: true; value: T } | { ok: false; error: ErrorCode };
 

@@ -85,6 +85,7 @@
       "alreadyContributed": "That character already contributed this round.",
       "noContribution": "That character has no result this round.",
       "emptyNote": "Write a note first.",
+      "alreadyActive": "An endeavour is already in progress.",
       "notAllowed": "You can't declare for that character right now."
     },
     "Settings": {

@@ -47,14 +47,19 @@ export function commit(reducer: (state: Endeavour, now: string) => Result): Prom
   });
 }
 
-/** Start a new tracker, replacing whatever is current (an active one is abandoned into history). */
-export function startEndeavour(input: NewEndeavourInput): Promise<Result> {
+/**
+ * Start a new tracker. An active one is abandoned into history, unless
+ * `replace` is false: then it is kept and the start fails with `alreadyActive`.
+ * The check runs inside the write queue, so two starts can't both see none active.
+ */
+export function startEndeavour(input: NewEndeavourInput, { replace = true }: { replace?: boolean } = {}): Promise<Result> {
   return serialize(async () => {
     if (!game.user.isActiveGM) return notActiveGM;
     const store = getStore();
+    const previous = store.current;
+    if (previous?.status === "active" && !replace) return { ok: false, error: "alreadyActive" } as const;
     const result = createEndeavour(input, foundry.utils.randomID(), now());
     if (!result.ok) return result;
-    const previous = store.current;
     const history =
       previous?.status === "active"
         ? pushHistory(store.history, summarize({ ...previous, status: "abandoned", endedAt: now() }))
