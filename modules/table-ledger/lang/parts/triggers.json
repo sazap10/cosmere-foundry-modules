@@ -13,6 +13,7 @@
     "FocusSpent": "{actor} spent {amount} focus on {name}.",
     "ReplacementHealFlavor": "{name}: replacement heal",
     "ReplacementHealNote": "{name} replaced the original heal.",
+    "Replaced": "{name} already replaced this heal, so its Apply buttons are off.",
     "Graze": {
       "Name": "Graze",
       "ChooseTitle": "Graze",

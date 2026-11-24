@@ -22,7 +22,7 @@ interface SheetItem {
   actor?: { items: Iterable<{ id: string; name: string; type: string; system?: { id?: string } }> } | null;
   system?: { id?: string };
   getFlag(scope: string, key: string): unknown;
-  setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
+  update(data: Record<string, unknown>): Promise<unknown>;
   unsetFlag(scope: string, key: string): Promise<unknown>;
 }
 
@@ -51,10 +51,14 @@ function builtInSummary(item: SheetItem): string {
 }
 
 const open = new Set<string>();
+/** Latest mount per sheet, so a slower earlier render can't add a second editor. */
+const mounts = new WeakMap<HTMLElement, number>();
 
-async function editorHtml(item: SheetItem, editable: boolean, invalid?: string): Promise<string> {
+/** Render from `draft` (fields being edited, possibly invalid) or else from the saved tag. */
+async function editorHtml(item: SheetItem, editable: boolean, invalid?: string, draft?: Partial<TriggerRule>): Promise<string> {
   const stored = item.getFlag(MODULE_ID, TAG_FLAG);
-  const tag = stored && typeof stored === "object" ? (stored as Partial<TriggerRule>) : undefined;
+  const saved = stored && typeof stored === "object" ? (stored as Partial<TriggerRule>) : undefined;
+  const tag = draft ?? saved;
   const current = {
     kind: tag?.trigger?.kind ?? "weapon-attack",
     actionId: tag?.trigger?.actionId ?? "",
@@ -70,8 +74,8 @@ async function editorHtml(item: SheetItem, editable: boolean, invalid?: string):
   return foundry.applications.handlebars.renderTemplate(template("abilities/trigger-tag.hbs"), {
     editable,
     open: open.has(item.uuid),
-    hasTag: !!tag,
-    builtIn: tag ? "" : builtInSummary(item),
+    hasTag: !!saved,
+    builtIn: saved ? "" : builtInSummary(item),
     invalid,
     noteLimit: NOTE_LIMIT,
     ...current,
@@ -106,30 +110,35 @@ function readFields(root: HTMLElement, item: SheetItem): Record<string, unknown>
   };
 }
 
-async function mount(root: HTMLElement, item: SheetItem, editable: boolean, invalid?: string): Promise<void> {
+async function mount(root: HTMLElement, item: SheetItem, editable: boolean, invalid?: string, draft?: Partial<TriggerRule>): Promise<void> {
+  const seq = (mounts.get(root) ?? 0) + 1;
+  mounts.set(root, seq);
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = await editorHtml(item, editable, invalid, draft);
+  if (mounts.get(root) !== seq) return;
   root.querySelector(".tl-trigger-editor")?.remove();
   const host = root.querySelector<HTMLElement>('.tab-content[data-tab="details"]') ?? root.querySelector<HTMLElement>(".window-content");
-  if (!host) return;
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = await editorHtml(item, editable, invalid);
   const editor = wrapper.querySelector<HTMLElement>(".tl-trigger-editor");
-  if (!editor) return;
+  if (!host || !editor) return;
   host.append(editor);
   editor.addEventListener("toggle", () => (editor.hasAttribute("open") ? open.add(item.uuid) : open.delete(item.uuid)));
   if (!editable) return;
+  // Each change re-renders from the fields as entered, so fields that depend on the trigger or
+  // effect appear and a tag that is invalid half-way can still be finished; only a valid tag is saved.
   editor.addEventListener("change", (event) => {
     event.stopPropagation();
     const fields = readFields(editor, item);
     const parsed = parseTag(fields);
-    if (parsed.ok) {
-      void item.setFlag(MODULE_ID, TAG_FLAG, fields);
-    } else {
-      void mount(root, item, editable, localize("Triggers.Editor.Invalid", { reason: parsed.reason }));
+    if (!parsed.ok) {
+      void mount(root, item, editable, localize("Triggers.Editor.Invalid", { reason: parsed.reason }), fields as Partial<TriggerRule>);
+      return;
     }
+    // `==` replaces the stored tag; setFlag would merge and keep fields from an earlier trigger or effect.
+    void item.update({ [`flags.${MODULE_ID}.==${TAG_FLAG}`]: fields }).then(() => mount(root, item, editable));
   });
   editor.querySelector("[data-action='tl-trigger-clear']")?.addEventListener("click", (event) => {
     event.preventDefault();
-    void item.unsetFlag(MODULE_ID, TAG_FLAG);
+    void item.unsetFlag(MODULE_ID, TAG_FLAG).then(() => mount(root, item, editable));
   });
 }
 

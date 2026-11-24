@@ -108,8 +108,13 @@ async function strikeWith(item: ImprovisedItem): Promise<void> {
   await strike.use();
 }
 
+/** Replace the action's use with the weapon choice; with the setting off, refuse it rather than letting the bare action post a card. */
 function onPreUseItem(item: ImprovisedItem | undefined): false | void {
-  if (!enabled() || item?.type !== "action" || !item.getFlag(MODULE_ID, ENTRY_FLAG)) return;
+  if (item?.type !== "action" || !item.getFlag(MODULE_ID, ENTRY_FLAG)) return;
+  if (!enabled()) {
+    ui.notifications.warn(localize("Improvised.Disabled"));
+    return false;
+  }
   void strikeWith(item).catch((err: unknown) => ui.notifications.error(err instanceof Error ? err.message : String(err)));
   return false;
 }

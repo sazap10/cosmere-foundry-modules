@@ -7,6 +7,7 @@
     "Heavy": "Heavy weapons",
     "Strike": "Strike",
     "NoWeapons": "No weapons were found in the system's item compendium.",
+    "Disabled": "Improvised Strike is turned off in this world's settings.",
     "StrikeName": "Improvised Strike: {weapon}",
     "Description": "An improvised attack using the damage and skill of a {weapon}.",
     "ActionDescription": "Attack with an object you can pick up, or use a weapon in an unconventional way. Choose the Light or Heavy weapon it most resembles and strike with that weapon's damage and skill.",

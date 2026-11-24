@@ -195,6 +195,12 @@ describe("tag restrictions and riders", () => {
     expect(parseTag({ ...tag, trigger: { kind: "heal-other" } }).ok).toBe(false);
   });
 
+  it("rejects a heal-other trigger limited to a hit or miss", () => {
+    const bonus = { ...tag, effect: "heal-bonus", followUp: undefined, optional: false, trigger: { kind: "heal-other" } };
+    expect(parseTag({ ...bonus, outcome: "hit" }).ok).toBe(false);
+    expect(parseTag({ ...bonus, outcome: "miss" }).ok).toBe(false);
+  });
+
   it("applies an outcome-limited rider only on that outcome", () => {
     const rider = rule({ optional: false, outcome: "miss", effect: "heal-bonus" });
     expect(matchTriggers(use({ d20: 20 }), [rider]).riders).toEqual([]);

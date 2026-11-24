@@ -165,6 +165,7 @@ export function parseTag(raw: unknown): ParsedTag {
   if (t.effect !== "heal-bonus" && !optional) return { ok: false, reason: "only the heal bonus can be applied without asking" };
   if (t.effect === "heal-bonus" && trigger.kind !== "heal-other") return { ok: false, reason: "the heal bonus triggers on a heal given to another character" };
   if (trigger.kind === "heal-other" && t.effect !== "heal-bonus") return { ok: false, reason: "only the heal bonus can trigger on a heal given to another character" };
+  if (trigger.kind === "heal-other" && t.outcome !== "any") return { ok: false, reason: "a heal has no hit or miss, so its outcome must be any result" };
   const note = typeof t.note === "string" ? t.note.trim() : "";
   if (note.length > NOTE_LIMIT) return { ok: false, reason: `note is longer than ${NOTE_LIMIT} characters` };
   const amount = t.amount === undefined ? undefined : Number(t.amount);

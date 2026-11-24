@@ -21,6 +21,8 @@ const ENABLED_SETTING = "abilityTriggers";
 const LIMITS_FLAG = "limits";
 const SOURCE_FLAG = "triggered";
 const GRAZE_SOURCE_FLAG = "grazeSource";
+/** On a system card whose heal a replacement heal took the place of: the replacing rule's name. */
+const REPLACED_FLAG = "replacedBy";
 
 /** What the GM needs to roll a graze when the attack card has no damage roll of its own (the basic Strike), snapshotted when the attack is made. */
 interface GrazeSource {
@@ -269,7 +271,8 @@ async function runFollowUp(state: TriggerCardState, offer: OfferView, deps: Trig
   }
 }
 
-async function runFocusSpend(state: TriggerCardState, offer: OfferView): Promise<boolean> {
+/** Serialised so two offers taken at once on this client can't both read the same focus value. */
+const runFocusSpend = serialize(async (state: TriggerCardState, offer: OfferView): Promise<boolean> => {
   const actor: TriggerActor | null = fromUuidSync(state.actorUuid);
   const amount = offer.rule.amount ?? 0;
   const focus = actor?.system?.resources?.foc?.value ?? 0;
@@ -283,7 +286,7 @@ async function runFocusSpend(state: TriggerCardState, offer: OfferView): Promise
     content: `<p>${foundry.utils.escapeHTML(localize("Triggers.FocusSpent", { actor: actor.name, amount, name: offer.rule.name }))}</p>`,
   });
   return true;
-}
+});
 
 async function runReplacementHeal(state: TriggerCardState, offer: OfferView): Promise<boolean> {
   const actor: TriggerActor | null = fromUuidSync(state.actorUuid);
@@ -296,11 +299,22 @@ async function runReplacementHeal(state: TriggerCardState, offer: OfferView): Pr
     flavor: localize("Triggers.ReplacementHealFlavor", { name: offer.rule.name }),
   });
   await actor.applyHealing(roll.total as number);
+  // The original card's Apply buttons would heal a second time.
+  await game.messages.get(state.sourceMessageId)?.setFlag(MODULE_ID, REPLACED_FLAG, offer.rule.name);
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     content: `<p>${foundry.utils.escapeHTML(localize("Triggers.ReplacementHealNote", { name: offer.rule.name }))}</p>`,
   });
   return true;
+}
+
+/** Refuse the Apply buttons on a card whose heal a replacement heal already took the place of. */
+function onChatMessageInteract(message: CardMessage | undefined, event: { currentTarget?: unknown } | undefined): false | void {
+  const replacedBy = message?.getFlag(MODULE_ID, REPLACED_FLAG);
+  const button = event?.currentTarget;
+  if (typeof replacedBy !== "string" || !(button instanceof HTMLElement) || !button.closest(".apply-buttons")) return;
+  ui.notifications.warn(localize("Triggers.Replaced", { name: replacedBy }));
+  return false;
 }
 
 async function chooseGrazeTarget(state: TriggerCardState): Promise<string | null> {
@@ -452,4 +466,5 @@ export function registerCosmereTriggers(deps: TriggerDeps): void {
   registerQuery("trigger.graze", serialize(graze), { access: "player" });
   registerTriggerOffers(makeHost(deps));
   Hooks.on(`${SYSTEM_ID}.useItem`, (item: TriggerItem | undefined) => void onUse(item, deps));
+  Hooks.on(`${SYSTEM_ID}.chatMessageInteract`, onChatMessageInteract);
 }
