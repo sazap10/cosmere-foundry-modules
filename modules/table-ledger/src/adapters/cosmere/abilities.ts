@@ -332,9 +332,14 @@ export const cosmereAbilities: AbilityAdapter = {
     void (async () => {
       await game.settings.set(MODULE_ID, PROMPTED_SETTING, true);
       if (Number(game.settings.get(SYSTEM_ID, "applyButtonsTo")) !== ApplyButtonsTo.SelectedOnly) return;
+      const howTo = !guardsEnabled()
+        ? "Abilities.Onboarding.HowToKey"
+        : game.settings.get(MODULE_ID, STRIKE_SETTING) === true
+          ? "Abilities.Onboarding.HowToPickerAll"
+          : "Abilities.Onboarding.HowToPicker";
       const accept = await foundry.applications.api.DialogV2.confirm({
         window: { title: localize("Abilities.Onboarding.Title"), icon: "fa-solid fa-bullseye" },
-        content: `<p>${localize("Abilities.Onboarding.Content")}</p>`,
+        content: `<p>${localize("Abilities.Onboarding.Content", { howTo: localize(howTo) })}</p>`,
         yes: { label: localize("Abilities.Onboarding.Accept") },
         no: { label: localize("Abilities.Onboarding.Decline") },
         rejectClose: false,

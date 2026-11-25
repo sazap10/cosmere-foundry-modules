@@ -21,10 +21,13 @@
     },
     "TalentHint": "Use its actions from the Actions tab: {names}",
     "Onboarding": {
-      "Title": "Apply buttons",
-      "Content": "Damage and healing Apply buttons currently only affect tokens you have <em>selected</em>. Players can't select enemy tokens, so the buttons seem to do nothing. Switch Cosmere RPG's \"Apply buttons to\" to <strong>Prioritise targeted</strong> (targeted tokens first, otherwise selected)? Foundry will reload.",
-      "Accept": "Switch and reload",
-      "Decline": "Keep current setting"
+      "Title": "Make Apply buttons work on enemies",
+      "Content": "Attack and healing cards in chat have buttons that apply the damage or healing. Right now they only work on your own character, so clicking them after hitting an enemy does nothing.<br><br>Choose <strong>Yes, fix it</strong> to make them work on whoever you're targeting. {howTo}<br><br>The page will reload. You'll see this once on each computer or browser you play on.",
+      "HowToPicker": "When you use an ability without a target, you'll be asked who it's for, and they'll be targeted for you. For weapon attacks, target the enemy first: hover over their token and press <strong>T</strong>.",
+      "HowToPickerAll": "When you attack or use an ability without a target, you'll be asked who it's for, and they'll be targeted for you.",
+      "HowToKey": "To target someone, hover over their token and press <strong>T</strong>.",
+      "Accept": "Yes, fix it",
+      "Decline": "No, leave it"
     },
     "Audit": {
       "Title": "Ability audit",
