@@ -9,6 +9,7 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 export const SETTING_CALENDAR = "calendar";
 export const SETTING_STALE_DAYS = "calendarStaleDays";
 export const SETTING_WIDGET = "clockWidget";
+export const SETTING_HIDE_STORMS = "clockHideStorms";
 
 const getCalendar = (): CalendarSnapshot | null => game.settings.get(MODULE_ID, SETTING_CALENDAR) ?? null;
 
@@ -36,6 +37,8 @@ export class ClockWidget extends HandlebarsApplicationMixin(ApplicationV2) {
         t: localize,
       }),
       isGM: game.user.isGM,
+      // Cosmetic only: world settings reach every client, so the data is still readable from the console.
+      hideStorms: !game.user.isGM && Boolean(game.settings.get(MODULE_ID, SETTING_HIDE_STORMS)),
     };
   }
 

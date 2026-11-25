@@ -7,7 +7,7 @@ System support goes through adapters (`src/adapters/`):
 | Feature | Cosmere RPG | Other systems |
 |---|---|---|
 | Endeavour tracker | ✔ | ✔ (system-neutral) |
-| World clock | ✔ | ✔ (shows whatever the planner pushes; mirrors the date into Simple Calendar when active) |
+| World clock | ✔ | ✔ (shows whatever the planner pushes; mirrors the date into Simple Calendar when active; the world setting **World clock: hide storms from players** shows highstorm/everstorm rows to the GM only) |
 | Session recaps | ✔ | ✔ |
 | Goals board / My goals | ✔ (goal items, 0–3 pips) | needs an adapter |
 | Target picker (before focus/Investiture is spent; skipped for weapon Strikes unless enabled in settings) | ✔ | needs an adapter |
