@@ -2,7 +2,7 @@ import { MODULE_ID } from "../constants";
 import { registerTool } from "../controls";
 import { registerQuery } from "../queries";
 import { validateCalendar } from "./snapshot";
-import { ClockWidget, SETTING_CALENDAR, SETTING_STALE_DAYS, SETTING_WIDGET } from "./widget";
+import { ClockWidget, SETTING_CALENDAR, SETTING_HIDE_STORMS, SETTING_STALE_DAYS, SETTING_WIDGET } from "./widget";
 import { toSimpleCalendarDate, type SimpleCalendarDate } from "./simple-calendar";
 
 /** The slice of Simple Calendar's public API (`SimpleCalendar.api`) used here. */
@@ -63,6 +63,15 @@ export function init() {
     config: true,
     type: Number,
     default: 14,
+    onChange: refresh,
+  });
+  game.settings.register(MODULE_ID, SETTING_HIDE_STORMS, {
+    name: "TABLE_LEDGER.Clock.Settings.HideStorms.Name",
+    hint: "TABLE_LEDGER.Clock.Settings.HideStorms.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
     onChange: refresh,
   });
   game.settings.register(MODULE_ID, SETTING_WIDGET, {

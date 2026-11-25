@@ -32,6 +32,10 @@
         "Name": "World clock: stale after (days)",
         "Hint": "Show a 'stale' badge when the calendar hasn't been updated for this many real days. 0 turns it off."
       },
+      "HideStorms": {
+        "Name": "World clock: hide storms from players",
+        "Hint": "Show the highstorm and everstorm rows to the GM only. Players still see the date, time and Stormlight badge."
+      },
       "Widget": {
         "Name": "Show world clock",
         "Hint": "Show the floating world-clock widget on this client."

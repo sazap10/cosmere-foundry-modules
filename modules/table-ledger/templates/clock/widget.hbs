@@ -35,6 +35,7 @@
     </span>
     {{/if}}
   </div>
+  {{#unless hideStorms}}
   <dl class="tl-clock-storms">
     {{> tlStormRows next=next last=last nextIcon="fa-solid fa-wind"
         nextLabel=(localize "TABLE_LEDGER.Clock.NextHighstorm") lastLabel=(localize "TABLE_LEDGER.Clock.LastHighstorm")}}
@@ -45,6 +46,7 @@
         nextLabel=(localize "TABLE_LEDGER.Clock.NextEverstorm") lastLabel=(localize "TABLE_LEDGER.Clock.LastEverstorm")}}
   </dl>
   {{/if}}
+  {{/unless}}
   {{#if events.length}}
   <ul class="tl-clock-events">
     {{#each events}}
