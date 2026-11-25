@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/sazap10/cosmere-foundry-modules/compare/table-ledger-v0.3.0...table-ledger-v0.4.0) (2026-11-25)
+
+
+### Features
+
+* **table-ledger:** add setting to hide storms from players ([#7](https://github.com/sazap10/cosmere-foundry-modules/issues/7)) ([77b47ce](https://github.com/sazap10/cosmere-foundry-modules/commit/77b47ce5d83581087bc922d0b988b29f88d6c1b9))
+* **table-ledger:** let players choose which owned characters my goals follows ([#9](https://github.com/sazap10/cosmere-foundry-modules/issues/9)) ([38a5eff](https://github.com/sazap10/cosmere-foundry-modules/commit/38a5eff4b0814506a18a199d9c024a381b1af8e0))
+
+
+### Bug Fixes
+
+* **table-ledger:** explain the apply buttons prompt in plain terms ([#10](https://github.com/sazap10/cosmere-foundry-modules/issues/10)) ([005a113](https://github.com/sazap10/cosmere-foundry-modules/commit/005a113ffbcded0bbdbcc465b3dcecac76525977))
+
 ## [0.3.0](https://github.com/sazap10/cosmere-foundry-modules/compare/table-ledger-v0.2.0...table-ledger-v0.3.0) (2026-11-24)
 
 
