@@ -15,7 +15,10 @@
       "Title": "My goals",
       "Collapse": "Collapse",
       "Expand": "Expand",
-      "Empty": "You don't own a character."
+      "Empty": "You don't own a character.",
+      "NoneFollowed": "No character assigned or followed.",
+      "Follow": "Also follow:",
+      "Unfollow": "Stop following"
     },
     "Card": {
       "Title": "Goal complete",

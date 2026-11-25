@@ -3,6 +3,12 @@
     {{#if img}}<img class="tl-goals-portrait" src="{{img}}" alt="">{{/if}}
     <button type="button" class="tl-goals-actor" data-action="openSheet" data-actor-uuid="{{actorUuid}}" data-tooltip="TABLE_LEDGER.Goals.OpenSheet">{{actorName}}</button>
     <span class="tl-goals-count">{{completedCount}}/{{totalCount}}</span>
+    {{#if unfollowable}}
+    <button type="button" class="tl-goals-unfollow" data-action="unfollow" data-actor-uuid="{{actorUuid}}"
+            data-tooltip="TABLE_LEDGER.Goals.Widget.Unfollow" aria-label="{{localize "TABLE_LEDGER.Goals.Widget.Unfollow"}}: {{actorName}}">
+      <i class="fa-solid fa-eye-slash"></i>
+    </button>
+    {{/if}}
   </header>
   {{#unless @root.collapsed}}
   {{#if purpose}}<p class="tl-goals-note"><strong>{{localize "TABLE_LEDGER.Goals.Purpose"}}:</strong> {{purpose}}</p>{{/if}}

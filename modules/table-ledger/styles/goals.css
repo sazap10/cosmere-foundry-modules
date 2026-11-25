@@ -18,6 +18,11 @@
 .tl-goals-complete .tl-goals-pip-filled { background: var(--tl-success); }
 .tl-goals-empty { opacity: 0.7; font-style: italic; }
 .tl-goals-widget .tl-goals-collapse { align-self: flex-end; width: auto; min-height: 0; padding: 0 0.4rem; line-height: 1.4; }
+.tl-goals-unfollow { width: auto; min-height: 0; padding: 0 0.3rem; margin: 0; background: none; border: none; box-shadow: none; line-height: 1; opacity: 0.6; cursor: pointer; }
+.tl-goals-unfollow:hover { opacity: 1; }
+.tl-goals-follow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; font-size: var(--font-size-12, 12px); }
+.tl-goals-follow-label { opacity: 0.7; }
+.tl-goals-follow button { width: auto; min-height: 0; padding: 0.1rem 0.4rem; line-height: 1.4; }
 .tl-goals-card { display: flex; gap: 0.5rem; align-items: center; }
 .tl-goals-card h3 { margin: 0; border: none; color: var(--tl-success); }
 .tl-goals-card p { margin: 0.25rem 0 0; }

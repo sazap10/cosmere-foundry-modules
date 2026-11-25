@@ -6,6 +6,7 @@ import {
   isComplete,
   sortCharacters,
   sortGoals,
+  splitFollowed,
   stepLevel,
   toCharacterRow,
   toCharacterRows,
@@ -88,5 +89,22 @@ describe("toCharacterRow", () => {
   it("builds rows for all characters, sorted", () => {
     const rows = toCharacterRows([{ ...character, actorName: "Shallan" }, character]);
     expect(rows.map((r) => r.actorName)).toEqual(["Kaladin", "Shallan"]);
+  });
+});
+
+describe("splitFollowed", () => {
+  const owned = [{ actorUuid: "Actor.mine" }, { actorUuid: "Actor.standin" }, { actorUuid: "Actor.other" }];
+
+  it("shows the assigned character without following it and offers the rest", () => {
+    expect(splitFollowed(owned, "Actor.mine", [])).toEqual({
+      shown: [{ actorUuid: "Actor.mine" }],
+      available: [{ actorUuid: "Actor.standin" }, { actorUuid: "Actor.other" }],
+    });
+  });
+
+  it("adds followed characters and ignores followed UUIDs the user no longer owns", () => {
+    const { shown, available } = splitFollowed(owned, undefined, ["Actor.standin", "Actor.gone"]);
+    expect(shown).toEqual([{ actorUuid: "Actor.standin" }]);
+    expect(available).toEqual([{ actorUuid: "Actor.mine" }, { actorUuid: "Actor.other" }]);
   });
 });

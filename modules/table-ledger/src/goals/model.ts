@@ -65,3 +65,18 @@ export function toCharacterRow(character: CharacterGoals, hideCompleted = false)
 
 export const toCharacterRows = (characters: readonly CharacterGoals[], hideCompleted = false): CharacterRow[] =>
   sortCharacters(characters).map((c) => toCharacterRow(c, hideCompleted));
+
+/**
+ * Which owned characters the player widget shows: the assigned character always, others only
+ * once followed. `available` is what the player can still opt in to.
+ */
+export function splitFollowed<T extends Pick<CharacterGoals, "actorUuid">>(
+  owned: readonly T[],
+  assignedUuid: string | undefined,
+  followed: readonly string[],
+): { shown: T[]; available: T[] } {
+  const shown: T[] = [];
+  const available: T[] = [];
+  for (const c of owned) (c.actorUuid === assignedUuid || followed.includes(c.actorUuid) ? shown : available).push(c);
+  return { shown, available };
+}
