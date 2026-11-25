@@ -10,4 +10,12 @@
     <p class="tl-goals-empty">{{@root.emptyText}}</p>
     {{/each}}
   </div>
+  {{#if available.length}}{{#unless collapsed}}
+  <footer class="tl-goals-follow">
+    <span class="tl-goals-follow-label">{{localize "TABLE_LEDGER.Goals.Widget.Follow"}}</span>
+    {{#each available}}
+    <button type="button" data-action="follow" data-actor-uuid="{{actorUuid}}"><i class="fa-solid fa-eye"></i> {{actorName}}</button>
+    {{/each}}
+  </footer>
+  {{/unless}}{{/if}}
 </div>

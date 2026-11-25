@@ -9,7 +9,7 @@ System support goes through adapters (`src/adapters/`):
 | Endeavour tracker | ✔ | ✔ (system-neutral) |
 | World clock | ✔ | ✔ (shows whatever the planner pushes; mirrors the date into Simple Calendar when active; the world setting **World clock: hide storms from players** shows highstorm/everstorm rows to the GM only) |
 | Session recaps | ✔ | ✔ |
-| Goals board / My goals | ✔ (goal items, 0–3 pips) | needs an adapter |
+| Goals board / My goals (players follow their assigned character, and opt in to other characters they own, e.g. stand-ins for absent players) | ✔ (goal items, 0–3 pips) | needs an adapter |
 | Target picker (before focus/Investiture is spent; skipped for weapon Strikes unless enabled in settings) | ✔ | needs an adapter |
 | Target-rolled heals (Field Medicine, Progression's Regrowth) | ✔ | needs an adapter |
 | Ability audit + chat hints (includes items whose charges no action spends, with a one-click fix) | ✔ | needs an adapter |
