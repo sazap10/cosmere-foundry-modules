@@ -71,7 +71,7 @@ export function init() {
     scope: "world",
     config: true,
     type: Boolean,
-    default: false,
+    default: true,
     onChange: refresh,
   });
   game.settings.register(MODULE_ID, SETTING_WIDGET, {
