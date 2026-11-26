@@ -50,7 +50,7 @@ export interface CardMessage {
   whisper?: string[];
   blind?: boolean;
   rolls?: { total: number; dice?: { faces: number }[] }[];
-  flags?: Record<string, { message?: { item?: unknown; targets?: CardTarget[] } } | undefined>;
+  flags?: Record<string, { message?: { item?: unknown; targets?: CardTarget[]; description?: string } } | undefined>;
   getFlag(scope: string, key: string): unknown;
   setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
   update(data: Record<string, unknown>): Promise<unknown>;
@@ -95,6 +95,25 @@ export function cardTargets(card: Pick<CardMessage, "flags">): CardTarget[] {
 
 export function d20Of(card: Pick<CardMessage, "rolls">): number | null {
   return card.rolls?.find((r) => r.dice?.[0]?.faces === 20)?.total ?? null;
+}
+
+/**
+ * The defence an attack card was made against, read from the card alone (for
+ * the GM, who can't see the attacker's throwaway Strike): the item it names, a
+ * weapon behind a Strike that no longer resolves (Physical), or the defence the
+ * card's description names.
+ */
+export function cardDefence(card: Pick<CardMessage, "flags">): Defence | undefined {
+  const message = card.flags?.[SYSTEM_ID]?.message;
+  const ref = typeof message?.item === "string" ? message.item : "";
+  if (ref.includes(".")) {
+    // Not strict: a throwaway Strike's uuid resolves to nothing, and strict lookups throw for that.
+    const item: CosmereAction | null = fromUuidSync(ref, { strict: false });
+    if (item) return attackDefence(item);
+    const parent: { type?: string } | null = fromUuidSync(ref.replace(/\.Item\.[^.]+$/, ""), { strict: false });
+    if (parent?.type === "weapon") return "phy";
+  }
+  return defenceFromText(htmlToText(message?.description));
 }
 
 export function noGrazeTargets(card: Pick<CardMessage, "getFlag">): string[] {

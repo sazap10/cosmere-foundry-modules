@@ -10,4 +10,4 @@ declare const foundry: any;
 declare const ChatMessage: any;
 declare const JournalEntry: any;
 declare const fromUuid: (uuid: string) => Promise<any>;
-declare const fromUuidSync: (uuid: string) => any;
+declare const fromUuidSync: (uuid: string, options?: { strict?: boolean }) => any;

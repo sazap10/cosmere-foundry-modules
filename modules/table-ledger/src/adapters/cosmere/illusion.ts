@@ -11,11 +11,11 @@
 import { MODULE_ID, localize } from "../../constants";
 import { askGM, registerQuery, serialize, type QueryUser } from "../../queries";
 import { addDisadvantage, attackOutcome, type AdvantageMode } from "../../abilities/strike-abilities";
-import type { Defence } from "../../abilities/triggers";
 import {
   NO_GRAZE_FLAG,
   abilityOf,
   attackDefence,
+  cardDefence,
   cardTargets,
   d20Of,
   isAttackRoll,
@@ -40,10 +40,23 @@ interface EffectDoc {
 interface MarkedActor {
   uuid: string;
   name: string;
+  type?: string;
   effects: Iterable<EffectDoc>;
+  /** The token document of an unlinked (synthetic) actor. */
+  token?: { disposition?: number } | null;
+  prototypeToken?: { disposition?: number };
   testUserPermission(user: unknown, level: "OWNER"): boolean;
   createEmbeddedDocuments(type: "ActiveEffect", data: Record<string, unknown>[], options?: { keepId?: boolean }): Promise<unknown>;
   deleteEmbeddedDocuments(type: "ActiveEffect", ids: string[]): Promise<unknown>;
+}
+
+/** CONST.TOKEN_DISPOSITIONS.FRIENDLY */
+const FRIENDLY = 1;
+
+/** "Yourself or an ally": the caster, a player character, or a friendly token's actor. */
+function isAllyOf(target: MarkedActor, caster: MarkedActor): boolean {
+  if (target.uuid === caster.uuid || target.type === "character") return true;
+  return (target.token?.disposition ?? target.prototypeToken?.disposition) === FRIENDLY;
 }
 
 export interface IllusionDeps {
@@ -121,10 +134,13 @@ async function callGM(name: string, data: Record<string, unknown>): Promise<void
 async function onUse(item: CosmereAction | undefined, deps: IllusionDeps): Promise<void> {
   if (!enabled() || !item || item.type !== "action" || !item.actor) return;
   if (ILLUSION_IDS.includes(item.system?.id ?? "")) {
-    // "Yourself or an ally": with no ally chosen, the illusion is of the caster.
-    const first: { actor?: { uuid: string } | null } | undefined = game.user.targets.first?.();
-    const targetUuid = deps.pickedTarget(item) ?? first?.actor?.uuid ?? item.actor.uuid;
-    await callGM("illusion.apply", { casterUuid: item.actor.uuid, targetUuid });
+    // "Yourself or an ally": with no ally chosen, the illusion is of the caster. A leftover target
+    // that isn't an ally (the picker is skipped while anything is targeted) doesn't count.
+    const first: { actor?: MarkedActor | null } | undefined = game.user.targets.first?.();
+    const caster = item.actor as unknown as MarkedActor;
+    const fallback = first?.actor && isAllyOf(first.actor, caster) ? first.actor.uuid : caster.uuid;
+    const targetUuid = deps.pickedTarget(item) ?? fallback;
+    await callGM("illusion.apply", { casterUuid: caster.uuid, targetUuid });
     return;
   }
   if (!isAttackRoll(item)) return;
@@ -138,11 +154,11 @@ async function onUse(item: CosmereAction | undefined, deps: IllusionDeps): Promi
   for (const target of marked) {
     const outcome = (defence ? attackOutcome(d20, target.def[defence]) : null) ?? (await askOutcome(item.name, target.name));
     if (outcome !== "miss") continue;
-    await callGM("illusion.clear", { messageId: card.id, targetUuid: target.uuid, defence: defence ?? null });
+    await callGM("illusion.clear", { messageId: card.id, targetUuid: target.uuid });
   }
 }
 
-/** GM side of casting: the caller must own the caster. One illusion per character; a new one replaces the old. */
+/** GM side of casting: the caller must own the caster, and the target must be the caster or an ally. One illusion per character; a new one replaces the old. */
 async function apply(data: unknown, caller: QueryUser): Promise<Response> {
   const payload = data && typeof data === "object" ? data : {};
   const casterUuid = "casterUuid" in payload ? payload.casterUuid : undefined;
@@ -152,6 +168,7 @@ async function apply(data: unknown, caller: QueryUser): Promise<Response> {
   const target: MarkedActor | null = await fromUuid(targetUuid);
   if (!caster || !target) return { ok: false, error: "unknown" };
   if (!caster.testUserPermission(caller, "OWNER")) return { ok: false, error: "notOwner" };
+  if (!isAllyOf(target, caster)) return { ok: false, error: "notAlly" };
   const old = illusionEffects(target).map((e) => e.id);
   if (old.length) await target.deleteEmbeddedDocuments("ActiveEffect", old);
   // An explicit id: cosmere-rpg's effect `_preCreate` reads `this.id` for any effect with exactly one status, and crashes while it's still null.
@@ -179,36 +196,54 @@ async function apply(data: unknown, caller: QueryUser): Promise<Response> {
 
 /**
  * GM side of a miss. Only the attacker's own card counts, and only for a target
- * it recorded. With a known defence the miss is re-checked from the card; an
- * unknown one is the attacker's call.
+ * it recorded. The defence comes from the card, never the request: with it the
+ * miss is re-checked; without it a player's miss needs the GM to confirm.
  */
 async function clear(data: unknown, caller: QueryUser): Promise<Response> {
   const payload = data && typeof data === "object" ? data : {};
   const messageId = "messageId" in payload ? payload.messageId : undefined;
   const targetUuid = "targetUuid" in payload ? payload.targetUuid : undefined;
-  const defence = "defence" in payload ? payload.defence : undefined;
   if (typeof messageId !== "string" || typeof targetUuid !== "string") return { ok: false, error: "unknown" };
   const message: CardMessage | undefined = game.messages.get(messageId);
   if (!message) return { ok: false, error: "unknown" };
   if (message.author?.id !== caller.id && !caller.isGM) return { ok: false, error: "notOwner" };
   const recorded = cardTargets(message).find((t) => t.uuid === targetUuid);
   if (!recorded) return { ok: false, error: "notTargeted" };
-  if ((defence === "phy" || defence === "cog" || defence === "spi") && attackOutcome(d20Of(message), recorded.def[defence as Defence]) !== "miss") {
-    return { ok: false, error: "notMissed" };
+  const defence = cardDefence(message);
+  if (defence) {
+    if (attackOutcome(d20Of(message), recorded.def[defence]) !== "miss") return { ok: false, error: "notMissed" };
+  } else if (!caller.isGM) {
+    // Asked without holding the reply: the player's request would time out while the GM decides.
+    void confirmMiss(caller.name, recorded.name, targetUuid);
+    return { ok: true };
   }
-  const target: MarkedActor | null = await fromUuid(targetUuid);
-  const ids = illusionEffects(target).map((e) => e.id);
-  if (!target || !ids.length) return { ok: true };
-  await target.deleteEmbeddedDocuments("ActiveEffect", ids);
-  await ChatMessage.create({ content: `<p>${esc(localize("Illusion.Ended", { target: target.name }))}</p>` });
+  await endIllusion(targetUuid);
   return { ok: true };
 }
 
-/** The end of the combat stands in for the end of the scene. */
+async function confirmMiss(attacker: string, targetName: string, targetUuid: string): Promise<void> {
+  const confirmed: unknown = await foundry.applications.api.DialogV2.confirm({
+    window: { title: localize("Illusion.Name") },
+    content: `<p>${esc(localize("Illusion.ConfirmMiss", { attacker, target: targetName }))}</p>`,
+    rejectClose: false,
+  });
+  if (confirmed === true) await endIllusion(targetUuid);
+}
+
+async function endIllusion(targetUuid: string): Promise<void> {
+  const target: MarkedActor | null = await fromUuid(targetUuid);
+  const ids = illusionEffects(target).map((e) => e.id);
+  if (!target || !ids.length) return;
+  await target.deleteEmbeddedDocuments("ActiveEffect", ids);
+  await ChatMessage.create({ content: `<p>${esc(localize("Illusion.Ended", { target: target.name }))}</p>` });
+}
+
+/** The end of the combat stands in for the end of the scene. Off-scene allies aren't combatants, so world actors are swept too. */
 async function onDeleteCombat(combat: { combatants: Iterable<{ actor?: MarkedActor | null }> }): Promise<void> {
   if (!game.user.isActiveGM || !enabled()) return;
+  const actors: (MarkedActor | null | undefined)[] = [...[...combat.combatants].map((c) => c.actor), ...(game.actors as Iterable<MarkedActor>)];
   const seen = new Set<string>();
-  for (const { actor } of combat.combatants) {
+  for (const actor of actors) {
     if (!actor || seen.has(actor.uuid)) continue;
     seen.add(actor.uuid);
     const ids = illusionEffects(actor).map((e) => e.id);

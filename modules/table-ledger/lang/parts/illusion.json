@@ -11,11 +11,13 @@
       "unknown": "That character or card can't be found.",
       "notOwner": "Only the caster's owner can do that.",
       "notTargeted": "That character wasn't part of the attack.",
-      "notMissed": "The attack hit, so the illusion stays."
+      "notMissed": "The attack hit, so the illusion stays.",
+      "notAlly": "Distracting Illusion can only be cast on yourself or an ally."
     },
     "Settings": {
       "Name": "Automate Distracting Illusion",
       "Hint": "Mark the character a Distracting Illusion is cast on. Attacks against them start with a disadvantage and can't graze, and the mark is removed after an attack misses them or when the combat ends."
-    }
+    },
+    "ConfirmMiss": "{attacker} says their attack missed {target}, but the card doesn't say which defence it was against. End {target}'s Distracting Illusion?"
   }
 }
