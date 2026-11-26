@@ -47,8 +47,12 @@ interface CosmereMessage {
   getFlag(scope: string, key: string): unknown;
 }
 
-/** Items whose use was confirmed through the picker and is being re-run. */
-const inFlight = new WeakSet<CosmereItemDoc>();
+/**
+ * Marks the options of a use the module re-runs after a veto. Per call, not per
+ * item: a second click on the item while a re-run waits on its dialog is a fresh use.
+ * The system passes unknown option keys through to its `preUseItem` hook.
+ */
+const RERUN = "tableLedgerRerun";
 /** Target chosen in the picker, for the heal prompt (off-scene party members have no token to target). */
 const pickedTargets = new WeakMap<object, string>();
 /** Target-picker flows in progress (a veto and its later re-run), for callers that need to wait for the real use. */
@@ -90,7 +94,7 @@ function isEphemeral(doc: CosmereItemDoc): boolean {
 function onPreUseItem(item: CosmereItemDoc | undefined, options: Record<string, unknown>): false | void {
   if (!item || item.type !== "action") return;
   // A re-run already carries its pick and its adjusted roll.
-  if (inFlight.has(item)) return;
+  if (options[RERUN]) return;
   // A fresh click forgets any earlier pick.
   pickedTargets.delete(item);
   const targets: Iterable<{ id: string }> = game.user.targets;
@@ -132,12 +136,7 @@ async function pickThenUse(item: CosmereItemDoc, side: "enemy" | "ally", options
  * behaves like the original click.
  */
 async function rerun(item: CosmereItemDoc, options: Record<string, unknown>) {
-  inFlight.add(item);
-  try {
-    await item.use(options);
-  } finally {
-    inFlight.delete(item);
-  }
+  await item.use({ ...options, [RERUN]: true });
 }
 
 /** After a use: ask the target to roll target-rolled heals (Field Medicine, Regrowth). */
