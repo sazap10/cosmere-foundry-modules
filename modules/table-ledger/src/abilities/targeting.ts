@@ -26,6 +26,15 @@ export function shouldPickTarget(args: {
   return args.enabled && !args.reentering && args.side !== null && args.targetCount === 0;
 }
 
+/**
+ * The token the picker targeted last time is still the only target at a fresh
+ * use: it was chosen for that earlier use, not this one, so ask again rather
+ * than reuse it silently. A target the user set themselves never matches.
+ */
+export function pickedTargetLingers(pickedTokenId: string | null, targetIds: readonly string[]): boolean {
+  return pickedTokenId !== null && targetIds.length === 1 && targetIds[0] === pickedTokenId;
+}
+
 export interface TargetCandidate {
   actorUuid: string;
   name: string;

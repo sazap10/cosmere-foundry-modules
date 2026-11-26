@@ -1,0 +1,42 @@
+{
+  "StrikeAbilities": {
+    "Choose": "Which weapon do you attack with for {name}?",
+    "YourWeapons": "Your weapons",
+    "Improvised": "Improvised (closest match)",
+    "Unarmed": "Unarmed",
+    "Unequipped": "(not equipped)",
+    "Strike": "Attack",
+    "StrikeName": "{name}: {weapon}",
+    "NoWeapon": "{name}: you have no weapon this ability can be used with.",
+    "Graze": "Graze",
+    "NoRoll": "No roll to compare",
+    "Apply": "Apply: {effects}",
+    "ApplyGraze": "Grazed? Apply: {effects}",
+    "ByHand": "{text} (by hand)",
+    "FocusLoss": "loses {amount} focus",
+    "NoTarget": "No target was recorded for the attack. On a hit, apply by hand: {effects}",
+    "Note": {
+      "fatal-thrust": "The target must be Surprised, unable to sense you, or not see you as a threat. On maximum damage dice, the injury roll gets a penalty.",
+      "subtle-takedown": "The target must be your size or smaller and Surprised, unable to sense you, or not see you as a threat.",
+      "wits-end": "The target must have 0 focus. This attack ignores the target's deflect value."
+    },
+    "Rider": {
+      "feinting-strike": "loses one reaction",
+      "subtle-takedown": "can't cry out or communicate",
+      "tagging-shot": "becomes your quarry"
+    },
+    "Error": {
+      "unknown": "That attack card can't be found.",
+      "notOwner": "Only the attacker can apply this effect.",
+      "alreadyApplied": "The effect has already been applied to that target.",
+      "notTargeted": "That target wasn't part of the attack.",
+      "notHit": "The attack didn't hit that target.",
+      "notMissed": "The attack hit that target, so it isn't a graze.",
+      "cantGraze": "This attack can't graze that target."
+    },
+    "Settings": {
+      "Name": "Make attacks for weapon abilities",
+      "Hint": "For abilities that say to make a weapon attack (Startling Blow, Devastating Blow, Fatal Thrust, Feinting Strike, Cheap Shot, Subtle Takedown, Tagging Shot, Wit's End, Reactive Strike, Flying Ace), ask which weapon and make the attack with the ability's skill, extra dice and defence, then apply its effect to the targets it hits."
+    }
+  }
+}
