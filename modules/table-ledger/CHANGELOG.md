@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/sazap10/cosmere-foundry-modules/compare/table-ledger-v0.4.0...table-ledger-v0.5.0) (2026-11-26)
+
+
+### Features
+
+* **table-ledger:** automate weapon abilities and Distracting Illusion ([#13](https://github.com/sazap10/cosmere-foundry-modules/issues/13)) ([7a87255](https://github.com/sazap10/cosmere-foundry-modules/commit/7a87255c0956ff7d4137e8c2f01a1f37ea7ef6ad))
+* **table-ledger:** let the foundry-mcp bridge read the endeavour tracker ([#11](https://github.com/sazap10/cosmere-foundry-modules/issues/11)) ([56b6fbf](https://github.com/sazap10/cosmere-foundry-modules/commit/56b6fbff945fe50ff9cb29f2625da59a7028cac3))
+
 ## [0.4.0](https://github.com/sazap10/cosmere-foundry-modules/compare/table-ledger-v0.3.0...table-ledger-v0.4.0) (2026-11-25)
 
 
