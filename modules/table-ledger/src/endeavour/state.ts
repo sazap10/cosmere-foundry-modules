@@ -357,6 +357,38 @@ export function pushHistory(history: EndeavourSummary[], summary: EndeavourSumma
   return [summary, ...history.filter((h) => h.id !== summary.id)].slice(0, LIMITS.history);
 }
 
+/** Read-out of one tracker for the planner (`table-ledger.endeavour.get`): the summary plus each round's results and O/C log. */
+export interface EndeavourReport extends EndeavourSummary {
+  playerVisible: boolean;
+  initialSuccesses: number;
+  initialFailures: number;
+  byRound: {
+    round: number;
+    contributions: { actorName: string; skill?: string; result: ContributionResult; note?: string }[];
+    log: { kind: NoteKind; actorName?: string; note: string }[];
+  }[];
+}
+
+/** `label` turns a skill key into its display name; the default keeps the key. Declarations are left out: they never carry results. */
+export function reportEndeavour(state: Endeavour, label: (skill: string) => string = (skill) => skill): EndeavourReport {
+  return {
+    ...summarize(state),
+    playerVisible: state.playerVisible,
+    initialSuccesses: state.initialSuccesses,
+    initialFailures: state.initialFailures,
+    byRound: roundsTable(state).map((row) => ({
+      round: row.round,
+      contributions: row.contributions.map(({ actorName, skill, result, note }) => ({
+        actorName,
+        ...(skill ? { skill: label(skill) } : {}),
+        result,
+        ...(note ? { note } : {}),
+      })),
+      log: row.log.map(({ kind, actorName, note }) => ({ kind, ...(actorName ? { actorName } : {}), note })),
+    })),
+  };
+}
+
 export interface RoundRow {
   round: number;
   contributions: Contribution[];

@@ -11,6 +11,7 @@ import {
   pushHistory,
   recordContribution,
   removeContribution,
+  reportEndeavour,
   roundsTable,
   summarize,
   type Endeavour,
@@ -240,5 +241,27 @@ describe("history", () => {
     history = pushHistory(history, { ...summarize(start()), id: "e5", status: "failed" });
     expect(history.filter((h) => h.id === "e5")).toHaveLength(1);
     expect(history[0]).toMatchObject({ id: "e5", status: "failed" });
+  });
+});
+
+describe("report", () => {
+  it("carries counts, head start and each round's results and notes, without declarations", () => {
+    let e = start({ initialSuccesses: 1 });
+    e = unwrap(recordContribution(e, { actorUuid: PCS[0], actorName: "Kal", skill: "ath", result: "success", note: "vaulted the gap" }, NOW));
+    e = unwrap(addNote(e, { kind: "complication", note: "Chull spooked", actorUuid: PCS[0], actorName: "Kal" }));
+    e = unwrap(nextRound(e));
+    e = unwrap(declare(e, { actorUuid: PCS[1], actorName: "Shallan", userId: "u1", skill: "lore" }));
+    e = unwrap(recordContribution(e, { actorUuid: PCS[2], actorName: "Adolin", result: "failure" }, NOW));
+
+    const report = reportEndeavour(e, (key) => key.toUpperCase());
+    expect(report).toMatchObject({ name: "Cross the Plains", status: "active", successes: 2, failures: 1, initialSuccesses: 1, rounds: 2 });
+    expect(report.byRound).toEqual([
+      {
+        round: 1,
+        contributions: [{ actorName: "Kal", skill: "ATH", result: "success", note: "vaulted the gap" }],
+        log: [{ kind: "complication", actorName: "Kal", note: "Chull spooked" }],
+      },
+      { round: 2, contributions: [{ actorName: "Adolin", result: "failure" }], log: [] },
+    ]);
   });
 });

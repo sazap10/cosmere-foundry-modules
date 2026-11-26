@@ -1,14 +1,25 @@
 import { registerQuery } from "../queries";
 import { commit, startEndeavour } from "./actions";
-import type { PcActor } from "./actors";
+import { skillLabel, type PcActor } from "./actors";
 import { getStore, playersMayDeclare } from "./settings";
-import { counts, declare, parseDeclarePayload, parseNewEndeavour, type ErrorCode } from "./state";
+import {
+  counts,
+  declare,
+  parseDeclarePayload,
+  parseNewEndeavour,
+  reportEndeavour,
+  type EndeavourReport,
+  type EndeavourSummary,
+  type ErrorCode,
+} from "./state";
 
 export type DeclareResponse = { ok: true } | { ok: false; error: ErrorCode | "notAllowed" };
 
 export type StartResponse =
   | { ok: true; id: string; name: string; successesNeeded: number; failuresAllowed: number; successes: number; failures: number }
   | { ok: false; error: ErrorCode; current?: string };
+
+export type GetResponse = { ok: true; current: EndeavourReport | null; history: EndeavourSummary[] };
 
 /**
  * `table-ledger.endeavour.declare` (player → active GM). The declaring user is
@@ -50,6 +61,22 @@ export function registerQueries() {
       }
       const e = result.value;
       return { ok: true, id: e.id, name: e.name, successesNeeded: e.successesNeeded, failuresAllowed: e.failuresAllowed, ...counts(e) };
+    },
+    { external: true },
+  );
+
+  /**
+   * `table-ledger.endeavour.get` (GM, also callable from the foundry-mcp
+   * bridge): read-only. `current` is the tracker on the HUD, active or ended
+   * but not yet cleared, with every round's results and O/C log; `history`
+   * is the newest-first summaries of ended trackers (it repeats `current`
+   * once that has ended).
+   */
+  registerQuery(
+    "endeavour.get",
+    (): GetResponse => {
+      const { current, history } = getStore();
+      return { ok: true, current: current ? reportEndeavour(current, skillLabel) : null, history };
     },
     { external: true },
   );

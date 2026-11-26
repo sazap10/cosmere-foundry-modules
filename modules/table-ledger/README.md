@@ -50,12 +50,13 @@ npm run build -w modules/table-ledger       # → modules/table-ledger/build/tab
 
 ## Planner integration
 
-The cosmere-rpg-planner pushes calendar snapshots, session recaps and new endeavours into the world through the foundry-vtt-mcp `call-module-query` tool. That tool goes through the foundry-mcp bridge running in the GM's browser, which calls these core queries (`CONFIG.queries`) there:
+The cosmere-rpg-planner pushes calendar snapshots, session recaps and new endeavours into the world, and reads endeavour results back for its session recaps, through the foundry-vtt-mcp `call-module-query` tool. That tool goes through the foundry-mcp bridge running in the GM's browser, which calls these core queries (`CONFIG.queries`) there:
 
 - `table-ledger.setCalendar`: a calendar snapshot (shape in `src/clock/snapshot.ts`). Also sets Simple Calendar's date when that module is active, and reports `simpleCalendar: "synced" | "absent" | "skipped: …"`.
 - `table-ledger.postRecap`: `{ session, date?, title, html }`. Creates or replaces that session's page in the "Session Recaps" journal and posts a chat card linking to it.
 - `table-ledger.endeavour.start`: `{ name, type, difficulty, successesNeeded?, failuresAllowed?, initialSuccesses?, initialFailures?, playerVisible?, replace? }`, the same fields as the GM panel's start form. `type` is `discovery | exploration | mission | pursuit | custom`; `difficulty` is `easy | moderate | hard | custom` (custom needs both thresholds). An endeavour already in progress is kept and the call returns `{ ok: false, error: "alreadyActive", current }` unless `replace: true`, which abandons it into history.
+- `table-ledger.endeavour.get`: no payload, read-only. Returns `{ ok: true, current, history }`: `current` is the tracker on the HUD (active, or ended and not yet cleared) or `null`, with its counts, head start and `byRound` (each round's contributions `{ actorName, skill?, result, note? }` and Opportunity/Complication log `{ kind, actorName?, note }`); `history` is the newest-first summaries of the last 10 ended trackers, counts only.
 
-They run only on the active GM's client, so a GM must be logged in. Foundry's core queries don't say who sent them, so any connected user could also send one; that is acceptable for a trusted table and is why only these writes are exposed this way.
+They run only on the active GM's client, so a GM must be logged in. Foundry's core queries don't say who sent them, so any connected user could also send one; that is acceptable for a trusted table and is why only these queries are exposed this way. It also means a player could read a hidden tracker through `endeavour.get`.
 
-Each also has a manual GM form in the Table Ledger scene controls: **Edit** on the world clock, the recap tool, and the endeavour panel.
+Each write also has a manual GM form in the Table Ledger scene controls: **Edit** on the world clock, the recap tool, and the endeavour panel.
