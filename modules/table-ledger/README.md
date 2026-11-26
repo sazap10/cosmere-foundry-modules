@@ -10,12 +10,14 @@ System support goes through adapters (`src/adapters/`):
 | World clock | ✔ | ✔ (shows whatever the planner pushes; mirrors the date into Simple Calendar when active; the world setting **World clock: hide storms from players** shows highstorm/everstorm rows to the GM only) |
 | Session recaps | ✔ | ✔ |
 | Goals board / My goals (players follow their assigned character, and opt in to other characters they own, e.g. stand-ins for absent players) | ✔ (goal items, 0–3 pips) | needs an adapter |
-| Target picker (before focus/Investiture is spent; skipped for weapon Strikes unless enabled in settings) | ✔ | needs an adapter |
+| Target picker (before focus/Investiture is spent; skipped for weapon Strikes unless enabled in settings; asks again, preselected, when the only target is the one it picked for the previous ability) | ✔ | needs an adapter |
 | Target-rolled heals (Field Medicine, Progression's Regrowth) | ✔ | needs an adapter |
 | Ability audit + chat hints (includes items whose charges no action spends, with a one-click fix) | ✔ | needs an adapter |
 | Charges/uses/ammo shown on actor-sheet item rows | ✔ | needs an adapter |
 | Optional ability triggers (popup + chat card after an action; once-per-round limits) | ✔ | needs an adapter |
 | Improvised Strike action (pick the Light or Heavy weapon it stands in for) | ✔ | needs an adapter |
+| Weapon abilities (Startling Blow, Devastating Blow, Cheap Shot, …: pick a weapon, attack with the ability's skill and extra dice, apply its effect on a hit) | ✔ | needs an adapter |
+| Distracting Illusion (marks the character; attacks against them get a disadvantage and can't graze; ends on a miss or when combat ends) | ✔ | needs an adapter |
 
 ## Ability triggers (Cosmere RPG)
 
@@ -34,6 +36,16 @@ The world setting **Offer ability triggers** turns the feature off.
 ## Improvised Strike (Cosmere RPG)
 
 Every character gets an **Improvised Strike** action. Using it asks which Light or Heavy melee weapon from the system's item compendium the improvised object stands in for, then makes that weapon's Strike with its damage and skill. The attack is a throwaway action; nothing about the choice is written to the character sheet, and other talents' triggers (including graze) work on it as on any Strike. The GM's client adds the action to existing characters on load and to new ones as they are created; the world setting **Improvised Strike action** turns it off.
+
+## Weapon abilities (Cosmere RPG)
+
+Startling Blow, Devastating Blow, Fatal Thrust, Feinting Strike, Cheap Shot, Subtle Takedown, Tagging Shot, Wit's End, Reactive Strike and Flying Ace are Utility actions in the system: their card describes the effect and the attack is left to a weapon Strike. After the ability's card (and its cost), the module asks which weapon to attack with, offering only the ones the text allows (Startling Blow: unarmed or an improvised weapon; Fatal Thrust: a light melee weapon; Tagging Shot: a ranged or thrown one). It then makes that weapon's Strike as a throwaway action carrying the ability's skill (Cheap Shot: Thievery, Subtle Takedown: Insight), raised stakes, extra damage dice (the action's own damage formula) and, for Fatal Thrust with a Discreet weapon, an advantage. Requirements it can't check (an unaware target, 0 focus, ignoring deflect) are shown in the weapon dialog.
+
+An effect card follows for abilities with an effect. For each target the attack hit, the GM's client applies it: Surprised (Startling Blow, until the end of the attacker's next turn), Stunned (Cheap Shot, until the end of the target's next turn) and Feinting Strike's focus loss (the attacker's Intimidation ranks, half on a graze). The conditions are removed when that turn ends; outside combat they stay until removed by hand. A missed target gets a **Grazed? Apply** button where the text says "on a hit or graze". Effects the module can't apply (a lost reaction, quarry, can't communicate) are listed as "by hand". Wit's End's attacks can't graze. The world setting **Make attacks for weapon abilities** turns it off.
+
+## Distracting Illusion (Cosmere RPG)
+
+Using Distracting Illusion asks which ally it's cast on (yourself included) and marks them with an effect shown on their tokens. An attack against a marked character opens with a disadvantage selected (one that had an advantage gets neither), and its card says it can't graze; graze offers and graze buttons are withheld for that target. When the attack misses the marked character, by the defence the attack names or, when unclear, by the attacker's answer, the GM's client removes the mark. Ending the combat removes every mark. The world setting **Automate Distracting Illusion** turns it off.
 
 ## Install
 

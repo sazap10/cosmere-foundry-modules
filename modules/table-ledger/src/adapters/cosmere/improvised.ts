@@ -36,7 +36,7 @@ interface ActorDoc {
   createEmbeddedDocuments(type: "Item", data: Record<string, unknown>[]): Promise<unknown>;
 }
 
-interface WeaponOption {
+export interface WeaponOption {
   key: string;
   light: boolean;
   label: string;
@@ -51,7 +51,7 @@ const dieOf = (weapon: WeaponDoc): string => {
 };
 
 /** Light and Heavy melee-style weapons from the system's items compendium, one per name, damage and type. */
-function weaponOptions(): Promise<WeaponOption[]> {
+export function weaponOptions(): Promise<WeaponOption[]> {
   optionsCache ??= (async () => {
     const pack = game.packs.get(`${SYSTEM_ID}.items`);
     if (!pack) return [];

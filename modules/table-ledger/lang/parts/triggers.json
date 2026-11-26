@@ -24,7 +24,8 @@
         "notOwner": "Only the attacker can graze from this card.",
         "alreadyGrazed": "This attack has already grazed.",
         "notTargeted": "That target wasn't part of the attack.",
-        "notOnScene": "The target isn't on the attacker's scene."
+        "notOnScene": "The target isn't on the attacker's scene.",
+        "cantGraze": "This attack can't graze that target."
       }
     },
     "Summary": {

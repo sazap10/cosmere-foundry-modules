@@ -4,13 +4,15 @@ import { MODULE_ID, localize } from "../../constants";
 import type { AbilityAdapter, AbilityFix, AbilityRecord, ChargeInfo } from "../types";
 import { ApplyButtonsTo, applyTargetCount, normaliseAction, usesWeaponStrike } from "../../abilities/audit-rules";
 import { consumableCounter, consumptionEntry, firstCounter } from "../../abilities/charges";
-import { shouldPickTarget, targetSide } from "../../abilities/targeting";
+import { pickedTargetLingers, shouldPickTarget, targetSide } from "../../abilities/targeting";
 import { pickTarget } from "../../abilities/target-picker";
 import { registerHealPrompt, requestHealing } from "../../abilities/heal-prompt";
 import { ALLY_ACTION_IDS, healRequestFor, type HealTarget, type HealerActor } from "./healing";
 import { registerCosmereTriggers } from "./triggers";
 import { onRenderItemSheet } from "./trigger-sheet";
 import { ensureImprovisedActions, registerImprovisedStrike } from "./improvised";
+import { attackAdjustment, noGrazeHint, registerIllusion } from "./illusion";
+import { makesStrike, registerStrikeAbilities } from "./strike-abilities";
 
 const SYSTEM_ID = "cosmere-rpg";
 const GUARDS_SETTING = "abilityGuards";
@@ -42,6 +44,7 @@ interface CosmereItemDoc {
 interface CosmereMessage {
   flags?: Record<string, { message?: { item?: unknown } } | undefined>;
   speaker?: unknown;
+  getFlag(scope: string, key: string): unknown;
 }
 
 /** Items whose use was confirmed through the picker and is being re-run. */
@@ -50,6 +53,8 @@ const inFlight = new WeakSet<CosmereItemDoc>();
 const pickedTargets = new WeakMap<object, string>();
 /** Target-picker flows in progress (a veto and its later re-run), for callers that need to wait for the real use. */
 const pickFlights = new WeakMap<object, Promise<void>>();
+/** Token the picker targeted last; it stays targeted so the card's Apply buttons still find it. */
+let pickedToken: string | null = null;
 
 const FIX_UPDATES: Record<Exclude<AbilityFix, "consumeCharge">, Record<string, unknown>> = {
   clearDamage: { "system.damage.formula": null },
@@ -84,29 +89,49 @@ function isEphemeral(doc: CosmereItemDoc): boolean {
 
 function onPreUseItem(item: CosmereItemDoc | undefined, options: Record<string, unknown>): false | void {
   if (!item || item.type !== "action") return;
-  // A fresh click forgets any earlier pick; the re-run keeps it.
-  if (!inFlight.has(item)) pickedTargets.delete(item);
-  // Strikes are rolled against whatever the player targets, if anything: no picker unless asked for.
-  if (isStrike(item) && game.settings.get(MODULE_ID, STRIKE_SETTING) !== true) return;
+  // A re-run already carries its pick and its adjusted roll.
+  if (inFlight.has(item)) return;
+  // A fresh click forgets any earlier pick.
+  pickedTargets.delete(item);
+  const targets: Iterable<{ id: string }> = game.user.targets;
+  const lingering = pickedTargetLingers(pickedToken, [...targets].map((t) => t.id));
+  // Strikes are rolled against whatever the player targets, if anything: no picker unless asked for,
+  // or the target is one the picker left behind for an earlier ability.
+  const strikeAsIs = isStrike(item) && game.settings.get(MODULE_ID, STRIKE_SETTING) !== true && !lingering;
   const side = targetSide(normalise(item), ALLY_ACTION_IDS);
-  const pick = shouldPickTarget({
-    enabled: guardsEnabled(),
-    reentering: inFlight.has(item),
-    side,
-    targetCount: game.user.targets.size,
-  });
-  if (!pick || !side) return;
+  const pick =
+    !strikeAsIs &&
+    shouldPickTarget({
+      enabled: guardsEnabled(),
+      reentering: false,
+      side,
+      targetCount: lingering ? 0 : game.user.targets.size,
+    });
   // Veto before the system's consume dialog, so nothing is spent until a target is chosen.
-  pickFlights.set(item, pickThenUse(item, side, options));
+  if (pick && side) {
+    pickFlights.set(item, pickThenUse(item, side, options, lingering ? (pickedToken ?? undefined) : undefined));
+    return false;
+  }
+  const adjusted = attackAdjustment(item, options);
+  if (!adjusted) return;
+  pickFlights.set(item, rerun(item, adjusted));
   return false;
 }
 
-async function pickThenUse(item: CosmereItemDoc, side: "enemy" | "ally", options: Record<string, unknown>) {
-  const result = await pickTarget(item.name, side, item.actor ?? null);
+async function pickThenUse(item: CosmereItemDoc, side: "enemy" | "ally", options: Record<string, unknown>, preselect?: string) {
+  const result = await pickTarget(item.name, side, item.actor ?? null, preselect);
   if (result.kind === "cancel") return;
+  pickedToken = result.kind === "target" ? (result.tokenId ?? null) : null;
   if (result.kind === "target") pickedTargets.set(item, result.actorUuid);
-  // `options` is the hook copy: it already carries the resolved actor, roll
-  // mode and configuration mode, so the re-run behaves like the original click.
+  await rerun(item, attackAdjustment(item, options) ?? options);
+}
+
+/**
+ * Use the item again after a veto. `options` is the hook copy: it already
+ * carries the resolved actor, roll mode and configuration mode, so the re-run
+ * behaves like the original click.
+ */
+async function rerun(item: CosmereItemDoc, options: Record<string, unknown>) {
   inFlight.add(item);
   try {
     await item.use(options);
@@ -184,6 +209,11 @@ function attachHint(html: HTMLElement, iconClass: string, text: string): void {
 }
 
 function onRenderChatMessage(message: CosmereMessage, html: HTMLElement): void {
+  const cantGraze = noGrazeHint(message);
+  if (cantGraze) {
+    attachHint(html, "fa-solid fa-ghost", cantGraze);
+    return;
+  }
   const item = messageItem(message);
   if (!item) return;
   if (item.type === "talent") {
@@ -191,8 +221,9 @@ function onRenderChatMessage(message: CosmereMessage, html: HTMLElement): void {
     if (names.length) attachHint(html, "fa-solid fa-hand-pointer", localize("Abilities.TalentHint", { names: names.join(", ") }));
     return;
   }
-  // "Make a melee attack…" on a Utility action: the card is the effect; the roll is a weapon Strike.
-  if (item.type === "action" && usesWeaponStrike(normalise(item))) {
+  // "Make a melee attack…" on a Utility action: the card is the effect; the roll is a weapon Strike
+  // (which the module makes itself for the abilities it knows).
+  if (item.type === "action" && !makesStrike(item) && usesWeaponStrike(normalise(item))) {
     attachHint(html, "fa-solid fa-khanda", localize("Abilities.StrikeHint"));
   }
 }
@@ -310,13 +341,15 @@ export const cosmereAbilities: AbilityAdapter = {
       }
       return actor.applyHealing(amount);
     });
-    // Registered before the heal hook below: it reads the picked target, which the heal hook clears.
+    // Registered before the heal hook below: they read the picked target, which the heal hook clears.
     registerCosmereTriggers({
       isStrike,
       normalise,
       pickedTarget: (item) => pickedTargets.get(item),
       pickFlight: (item) => pickFlights.get(item),
     });
+    registerIllusion({ pickedTarget: (item) => pickedTargets.get(item) });
+    registerStrikeAbilities();
     registerImprovisedStrike();
     Hooks.on(`${SYSTEM_ID}.preUseItem`, onPreUseItem);
     Hooks.on(`${SYSTEM_ID}.useItem`, (item: CosmereItemDoc | undefined) => void onUseItem(item));

@@ -13,8 +13,8 @@ import { fieldMedicineFormula, normaliseDie, parseDC, regrowthFormula, testSucce
 import { matchTriggers, type UseDescription } from "../../abilities/triggers";
 import { rulesOfItem } from "./trigger-rules";
 
-/** Ally-targeted actions without a heal formula; the picker still asks for a target. */
-export const ALLY_ACTION_IDS = ["field-medicine", "prg", "injury-regrowth"] as const;
+/** Ally-targeted actions without a heal formula; the picker still asks for a target. Distracting Illusion's Handbook action id is misspelled. */
+export const ALLY_ACTION_IDS = ["field-medicine", "prg", "injury-regrowth", "distracting-illusion", "distracint-illusion"] as const;
 
 interface Skill {
   rank?: number;

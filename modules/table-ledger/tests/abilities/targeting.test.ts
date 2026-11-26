@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { normaliseAction, type RawAction } from "../../src/abilities/audit-rules";
-import { orderCandidates, shouldPickTarget, targetSide, type TargetCandidate } from "../../src/abilities/targeting";
+import { orderCandidates, pickedTargetLingers, shouldPickTarget, targetSide, type TargetCandidate } from "../../src/abilities/targeting";
 
 const ALLY_IDS = ["field-medicine", "prg"];
 const action = (raw: Partial<RawAction>, id?: string) => ({
@@ -38,6 +38,16 @@ describe("shouldPickTarget", () => {
     expect(shouldPickTarget({ enabled: true, reentering: true, side: "enemy", targetCount: 0 })).toBe(false);
     expect(shouldPickTarget({ enabled: true, reentering: false, side: "enemy", targetCount: 1 })).toBe(false);
     expect(shouldPickTarget({ enabled: true, reentering: false, side: null, targetCount: 0 })).toBe(false);
+  });
+});
+
+describe("pickedTargetLingers", () => {
+  it("is true only when the picker's token is still the sole target", () => {
+    expect(pickedTargetLingers("t1", ["t1"])).toBe(true);
+    expect(pickedTargetLingers(null, ["t1"])).toBe(false);
+    expect(pickedTargetLingers("t1", ["t2"])).toBe(false);
+    expect(pickedTargetLingers("t1", ["t1", "t2"])).toBe(false);
+    expect(pickedTargetLingers("t1", [])).toBe(false);
   });
 });
 

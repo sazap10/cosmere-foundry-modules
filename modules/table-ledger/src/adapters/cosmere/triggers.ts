@@ -15,6 +15,8 @@ import {
   type UseTarget,
 } from "../../abilities/triggers";
 import { rulesOfItem } from "./trigger-rules";
+import { grazeBlocked } from "./illusion";
+import { noGrazeTargets } from "./cards";
 
 const SYSTEM_ID = "cosmere-rpg";
 const ENABLED_SETTING = "abilityTriggers";
@@ -209,6 +211,8 @@ async function onUse(item: TriggerItem | undefined, deps: TriggerDeps): Promise<
   const actor = item.actor;
   const use = describeUse(item, card, deps);
   const collected = collectRules(actor, use);
+  // The ability can't graze, or every target has Distracting Illusion: no graze offer.
+  if (grazeBlocked(item, use.targets.map((t) => t.uuid))) collected.rules = collected.rules.filter((rule) => rule.effect !== "graze");
   const matches = matchTriggers(use, collected.rules);
   if (!matches.offers.length && !matches.askOutcome) return;
   const combat = combatPoint();
@@ -390,6 +394,7 @@ async function graze(data: unknown, caller: QueryUser): Promise<{ ok: true } | {
   if (!message || !isGrazeSource(source) || !attacker) return { ok: false, error: "unknown" };
   if (message.author?.id !== caller.id || !attacker.testUserPermission(caller, "OWNER")) return { ok: false, error: "notOwner" };
   if (message.getFlag(MODULE_ID, "grazed")) return { ok: false, error: "alreadyGrazed" };
+  if (noGrazeTargets(message).includes(targetUuid)) return { ok: false, error: "cantGraze" };
   const recorded = message.flags?.[SYSTEM_ID]?.message?.targets ?? [];
   if (recorded.length && !recorded.some((t) => t.uuid === targetUuid)) return { ok: false, error: "notTargeted" };
   const target: TriggerActor | null = await fromUuid(targetUuid);

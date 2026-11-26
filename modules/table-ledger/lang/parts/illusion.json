@@ -1,0 +1,21 @@
+{
+  "Illusion": {
+    "Name": "Distracting Illusion",
+    "EffectDescription": "Attacks against this character gain a disadvantage and can't graze. Ends after an attack misses them, or at the end of the scene.",
+    "Applied": "{caster} Lightweaves a distracting illusion of {target}.",
+    "Ended": "An attack missed {target}: their Distracting Illusion ends.",
+    "Disadvantage": "Distracting Illusion on {names}: this attack has a disadvantage.",
+    "CantGraze": "Can't graze {names}: Distracting Illusion.",
+    "AskOutcome": "Did {attack} hit {target}? A miss ends their Distracting Illusion.",
+    "Error": {
+      "unknown": "That character or card can't be found.",
+      "notOwner": "Only the caster's owner can do that.",
+      "notTargeted": "That character wasn't part of the attack.",
+      "notMissed": "The attack hit, so the illusion stays."
+    },
+    "Settings": {
+      "Name": "Automate Distracting Illusion",
+      "Hint": "Mark the character a Distracting Illusion is cast on. Attacks against them start with a disadvantage and can't graze, and the mark is removed after an attack misses them or when the combat ends."
+    }
+  }
+}

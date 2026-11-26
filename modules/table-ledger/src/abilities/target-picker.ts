@@ -51,35 +51,46 @@ function candidates(side: TargetSide, user: ActorLike | null): TargetCandidate[]
       img: token.document.texture?.src ?? actor.img,
       tokenId: token.id,
       disposition: partyIds.has(actor.id) ? 1 : token.document.disposition,
-      isSelf: actor.id === user?.id,
+      // By uuid: unlinked tokens of one adversary share its actor id.
+      isSelf: actor.uuid === user?.uuid,
     });
   }
   // Ally abilities can reach party members who aren't on this scene.
   if (side === "ally") {
     for (const actor of party) {
       if (onScene.has(actor.id)) continue;
-      out.push({ actorUuid: actor.uuid, name: actor.name, img: actor.img, disposition: 1, isSelf: actor.id === user?.id });
+      out.push({ actorUuid: actor.uuid, name: actor.name, img: actor.img, disposition: 1, isSelf: actor.uuid === user?.uuid });
     }
   }
   return orderCandidates(out, side);
 }
 
-function row(c: TargetCandidate, index: number): string {
+function row(c: TargetCandidate, index: number, checked: number): string {
   const esc = foundry.utils.escapeHTML;
   const where = c.tokenId ? "" : ` <span class="tl-abilities-picker-note">${esc(localize("Abilities.Picker.OffScene"))}</span>`;
   return `<label class="tl-abilities-picker-row">
-    <input type="radio" name="target" value="${index}" ${index === 0 ? "checked" : ""}>
+    <input type="radio" name="target" value="${index}" ${index === checked ? "checked" : ""}>
     ${c.img ? `<img src="${esc(c.img)}" alt="">` : ""}
     <span>${esc(c.name)}${c.isSelf ? ` ${esc(localize("Abilities.Picker.Self"))}` : ""}${where}</span>
   </label>`;
 }
 
-/** Ask who the ability is used on. Resolves after the target (if any) is set. */
-export async function pickTarget(abilityName: string, side: TargetSide, user: ActorLike | null): Promise<PickResult> {
+/** Untarget everything this user targets. */
+function releaseTargets() {
+  for (const token of [...(game.user.targets as Iterable<TokenLike>)]) token.setTarget(false, { releaseOthers: false, groupSelection: false });
+}
+
+/**
+ * Ask who the ability is used on. Resolves after the target (if any) is set;
+ * any earlier target is released. `preselect` is the token chosen last time,
+ * offered as the default.
+ */
+export async function pickTarget(abilityName: string, side: TargetSide, user: ActorLike | null, preselect?: string): Promise<PickResult> {
   const list = candidates(side, user);
+  const checked = Math.max(0, list.findIndex((c) => preselect !== undefined && c.tokenId === preselect));
   const esc = foundry.utils.escapeHTML;
   const content = `<p>${esc(localize(side === "ally" ? "Abilities.Picker.AllyPrompt" : "Abilities.Picker.EnemyPrompt", { name: abilityName }))}</p>
-    ${list.length ? `<div class="tl-abilities-picker">${list.map(row).join("")}</div>` : `<p>${esc(localize("Abilities.Picker.Empty"))}</p>`}`;
+    ${list.length ? `<div class="tl-abilities-picker">${list.map((c, i) => row(c, i, checked)).join("")}</div>` : `<p>${esc(localize("Abilities.Picker.Empty"))}</p>`}`;
   const choice: unknown = await foundry.applications.api.DialogV2.wait({
     window: { title: localize("Abilities.Picker.Title"), icon: "fa-solid fa-crosshairs" },
     classes: ["tl-abilities-picker-dialog"],
@@ -102,13 +113,14 @@ export async function pickTarget(abilityName: string, side: TargetSide, user: Ac
     ],
     rejectClose: false,
   });
-  if (choice === "none") return { kind: "none" };
+  if (choice === "none") {
+    releaseTargets();
+    return { kind: "none" };
+  }
   if (typeof choice !== "number" || !list[choice]) return { kind: "cancel" };
   const picked = list[choice];
-  if (picked.tokenId) {
-    sceneTokens()
-      .find((t) => t.id === picked.tokenId)
-      ?.setTarget(true, { releaseOthers: true, groupSelection: false });
-  }
-  return { kind: "target", actorUuid: picked.actorUuid, tokenId: picked.tokenId };
+  const token = picked.tokenId ? sceneTokens().find((t) => t.id === picked.tokenId) : undefined;
+  if (token) token.setTarget(true, { releaseOthers: true, groupSelection: false });
+  else releaseTargets();
+  return { kind: "target", actorUuid: picked.actorUuid, tokenId: token?.id };
 }
